@@ -13,6 +13,7 @@ import { SchemeLatest } from '@/models/SchemeLatest';
 
 const FundReturns = async ({ searchParams }: { searchParams: SearchParams }) => {
     const params = await searchParams;
+    const timeframe = params.timeframe || "3Y";
     const existingSchemeCodes = params.schemeCode?.split(',').filter(code => code.trim() !== '').map(code => parseInt(code, 10)) || [];
     let selectedFundHistory: Returns[] = [];
     let combinedReturns: ReturnsHistory[] = [];
@@ -25,7 +26,7 @@ const FundReturns = async ({ searchParams }: { searchParams: SearchParams }) => 
                 fund.sipAmount = parseFloat(sipAmount);
             }
         });
-        selectedFundHistory = await getSelectedFundsDataHistory(funds, '2024-01-01', '2025-01-01');
+        selectedFundHistory = await getSelectedFundsDataHistory(funds, timeframe);
         combinedReturns = await processReturns(selectedFundHistory);
     }
 

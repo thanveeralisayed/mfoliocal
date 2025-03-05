@@ -3,4 +3,5 @@ export type SearchParams = {
     search?: string;
     schemeCode?: string;
     getselectedfundshistory?:string,
+    timeframe?:string;
   };

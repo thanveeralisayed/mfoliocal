@@ -1,7 +1,7 @@
 'use server'
 
 import { SchemeHistory } from "@/models/schemeHistory";
-import { getReturnsForSipByFunds } from "../utils/processNav";
+import { getDateRange, getReturnsForSipByFunds } from "../utils/processNav";
 import { Schemes } from "@/models/scheme";
 import { console } from "inspector";
 import { SchemeLatest } from "@/models/SchemeLatest";
@@ -23,7 +23,9 @@ export const getSelectedFundsDataLatest = async (schemeCodes: number[]) => {
     }
 }
 
-export const getSelectedFundsDataHistory = async (selectedScheme: SchemeLatest[], startDate: string, endDate: string) => {
+export const getSelectedFundsDataHistory = async (selectedScheme: SchemeLatest[], timeFrame: string) => {
+    const {startDate,endDate} = await getDateRange(timeFrame);
+    
     try {
         const schemeDataArray: SchemeHistory[] = await Promise.all(
             selectedScheme.map(async (scheme) => {
@@ -37,7 +39,7 @@ export const getSelectedFundsDataHistory = async (selectedScheme: SchemeLatest[]
             })
         );
         const returns = await getReturnsForSipByFunds(schemeDataArray);
-        
+
         return returns;
     } catch (error) {
         return [];

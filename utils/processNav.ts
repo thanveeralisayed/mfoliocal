@@ -97,9 +97,44 @@ export const processReturns = async (returnsData: Returns[]) => {
 
     // Filter out dates that do not have returns for all funds
     const allSchemeNames = returnsData.map(scheme => scheme.schemeName);
-    const filteredReturns = combinedReturns.filter(entry => 
+    const filteredReturns = combinedReturns.filter(entry =>
         allSchemeNames.every(schemeName => schemeName in entry)
     );
 
     return filteredReturns;
+}
+
+
+export async function getDateRange(period: string): Promise<{ startDate: string, endDate: string }> {
+    const endDate = new Date();
+    const startDate = new Date();
+
+    switch (period) {
+        case "6M":
+            startDate.setMonth(startDate.getMonth() - 6);
+            break;
+        case "1Y":
+            startDate.setFullYear(startDate.getFullYear() - 1);
+            break;
+        case "3Y":
+            startDate.setFullYear(startDate.getFullYear() - 3);
+            break;
+        case "5Y":
+            startDate.setFullYear(startDate.getFullYear() - 5);
+            break;
+        case "10Y":
+            startDate.setFullYear(startDate.getFullYear() - 10);
+            break;
+        default:
+            throw new Error("Invalid period");
+    }
+
+    const formatDate = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    return { startDate: formatDate(startDate), endDate: formatDate(endDate) };
 }
