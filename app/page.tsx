@@ -6,7 +6,7 @@ import { Returns } from "@/models/returns";
 import { Schemes } from "@/models/scheme";
 import { SchemeLatest } from "@/models/SchemeLatest";
 import { SearchParams } from "@/models/searchParams";
-import { getMutualAllFunds, getSelectedFundsDataHistory, getSelectedFundsDataLatest, searchByFundName } from "@/server/action";
+import { getSelectedFundsDataHistory, getSelectedFundsDataLatest, searchByFundName } from "@/server/action";
 
 export default async function Home({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
