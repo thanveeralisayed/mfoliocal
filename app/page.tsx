@@ -8,6 +8,7 @@ import { SchemeLatest } from "@/models/SchemeLatest";
 import { SearchParams } from "@/models/searchParams";
 import { getSelectedFundsDataHistory, getSelectedFundsDataLatest, searchByFundName } from "@/server/action";
 
+
 export default async function Home({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
   let offset = params?.offset || "0";
@@ -60,6 +61,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
               ))}
           </div>
         </div>
+      </div>
+      <div className="mt-8 text-center">
+        <a href="https://www.linkedin.com/in/thanveer-ali-98041a1a3/" target="_blank" rel="noopener noreferrer" className="btn">
+          Connect with me on LinkedIn
+        </a>
       </div>
     </div>
   );
