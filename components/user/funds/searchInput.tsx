@@ -18,7 +18,7 @@ const SearchFundsInput = () => {
         params.set('search', search);
         params.set('offset', "0");
         replace(`${pathname}?${params.toString()}`);
-    }, 300)
+    }, 100)
 
 
     return (
