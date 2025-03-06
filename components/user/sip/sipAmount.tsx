@@ -17,8 +17,8 @@ const SipAmountInput: React.FC<SipAmountInputProps> = ({ schemeCode }) => {
     const value = e.target.value;
     const params = new URLSearchParams(searchParams);
     params.set(schemeCode.toString(), value);
-    params.set('getselectedfundshistory', 'false'); // Set getselectedfundshistory to false
-    router.replace(`${pathname}?${params.toString()}`);
+    params.set('getselectedfundshistory', 'false'); 
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false }); 
   }
 
   return (

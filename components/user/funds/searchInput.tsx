@@ -17,7 +17,7 @@ const SearchFundsInput = () => {
         const params = new URLSearchParams(searchParams);
         params.set('search', search);
         params.set('offset', "0");
-        replace(`${pathname}?${params.toString()}`);
+        replace(`${pathname}?${params.toString()}`, { scroll: false });
     }, 100)
 
 

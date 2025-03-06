@@ -24,7 +24,7 @@ const CalculateButton: React.FC<CalculateButtonProps> = ({ funds }) => {
 
     const params = new URLSearchParams(searchParams);
     params.set('getselectedfundshistory', 'true');
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false }); 
 
   };
 

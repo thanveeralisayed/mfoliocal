@@ -45,7 +45,7 @@ export function DataTable<TData, TValue>({
     offset = offset + 5
     const params = new URLSearchParams(searchParams);
     params.set('offset', offset.toString());
-    replace(`${pathname}?${params.toString()}`);
+    replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   const onPreviousPage = () => {
@@ -57,7 +57,7 @@ export function DataTable<TData, TValue>({
     } else {
       params.delete('offset');
     }
-    replace(`${pathname}?${params.toString()}`);
+    replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   return (

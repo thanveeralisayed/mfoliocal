@@ -3,14 +3,30 @@ import React from 'react'
 import { DataTable } from './data-table'
 import { columns } from './columns'
 import SearchFundsInput from './searchInput'
+import { SearchParams } from '@/models/searchParams'
+import { searchByFundName } from '@/server/action'
 
 type tableProps = {
-  schemes: Schemes[]
-  offset: number
+  params:SearchParams
 }
 
-const FundsTable = (props: tableProps) => {
+const FundsTable = async ({params}: tableProps) => {
 
+    let offset = params?.offset || "0";
+    const searchString = `${params?.search || ''} direct growth` || "";
+    const schemes: Schemes[] = [];
+    if (searchString !== "") {
+      console.log(searchString)
+      const res = await searchByFundName(searchString);
+      const startIndex = parseInt(offset);
+      const endIndex = Math.min(startIndex + 5, res.length);
+      if (startIndex < endIndex) {
+        schemes.push(...res.slice(startIndex, endIndex));
+      } else {
+        offset = `${parseInt(offset) - 5}`;
+        schemes.push(...res.slice(startIndex - 5, endIndex));
+      }
+    }
   
 
   return (
@@ -19,9 +35,9 @@ const FundsTable = (props: tableProps) => {
         <SearchFundsInput />
       </div>
       <DataTable
-        offset={props.offset}
+        offset={parseInt(offset)}
         columns={columns}
-        data={props.schemes}
+        data={schemes}
       />
     </div>
   )

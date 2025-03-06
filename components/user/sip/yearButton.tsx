@@ -18,7 +18,7 @@ const YearButton: React.FC<YearButtonProps> = ({ label, value }) => {
     const handleClick = () => {
         const params = new URLSearchParams(searchParams);
         params.set('timeframe', value);
-        replace(`${pathname}?${params.toString()}`);
+        replace(`${pathname}?${params.toString()}`, { scroll: false });
     };
 
     return (
