@@ -14,7 +14,9 @@ const CalculateButton: React.FC<CalculateButtonProps> = ({ funds }) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const handleCalculate = () => {
+  const handleCalculate = async () => {
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    await delay(100);
     funds.forEach(fund => {
       const sipAmount = searchParams.get(fund.meta.scheme_code.toString());
       if (sipAmount) {

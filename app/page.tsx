@@ -18,23 +18,23 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
             <FundsTable params={params} />
           </Suspense>
           <div className="block md:hidden">
-            <Suspense fallback={<Loading/>}>
+            <Suspense key={params.schemeCode}  fallback={<Loading/>}>
               <SipCard searchParams={params} />
             </Suspense>
-            <Suspense fallback={<Loading/>}>
+            <Suspense key={params.getselectedfundshistory}  fallback={<Loading/>}>
               <AllReturns params={params} />
             </Suspense>
           </div>
-          <Suspense fallback={<Loading/>}>
+          <Suspense key={params.getselectedfundshistory} fallback={<Loading/>}>
             <FundReturns searchParams={params} />
           </Suspense>
         </div>
         <div className="col-span-1 hidden md:block">
           <div className="h-full p-4">
-            <Suspense fallback={<Loading/>}>
-              <SipCard searchParams={params} />
+            <Suspense key={params.schemeCode} fallback={<Loading/>}>
+              <SipCard key={params.schemeCode} searchParams={params} />
             </Suspense>
-            <Suspense fallback={<Loading/>}>
+            <Suspense key={params.getselectedfundshistory}  fallback={<Loading/>}>
               <AllReturns params={params} />
             </Suspense>
           </div>

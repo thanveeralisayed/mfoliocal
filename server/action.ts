@@ -24,8 +24,12 @@ export const getSelectedFundsDataLatest = async (schemeCodes: number[]) => {
 }
 
 export const getSelectedFundsDataHistory = async (selectedScheme: SchemeLatest[], timeFrame: string) => {
-    const {startDate,endDate} = await getDateRange(timeFrame);
-    
+    if (selectedScheme.some(scheme => scheme.sipAmount === undefined || scheme.sipAmount === 0)) {
+        console.log('found zero')
+        return [];
+    }
+
+    const { startDate, endDate } = await getDateRange(timeFrame);
     try {
         const schemeDataArray: SchemeHistory[] = await Promise.all(
             selectedScheme.map(async (scheme) => {
