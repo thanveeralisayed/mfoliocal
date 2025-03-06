@@ -17,13 +17,6 @@ const CalculateButton: React.FC<CalculateButtonProps> = ({ funds }) => {
   const handleCalculate = async () => {
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
     await delay(100);
-    funds.forEach(fund => {
-      const sipAmount = searchParams.get(fund.meta.scheme_code.toString());
-      if (sipAmount) {
-        fund.sipAmount = parseFloat(sipAmount);
-      }
-    });
-
     const params = new URLSearchParams(searchParams);
     params.set('getselectedfundshistory', 'true');
     router.replace(`${pathname}?${params.toString()}`, { scroll: false }); 
