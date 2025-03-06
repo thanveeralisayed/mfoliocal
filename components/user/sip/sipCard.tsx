@@ -38,7 +38,7 @@ const SipCard = async ({ searchParams }: sipCardProps) => {
                             </div>
                         </div>
                     )) : 'Please Select schemes to calculate'}
-                    {funds.length > 0 && <div className="flex space-x-2 mt-4">
+                    {funds.length > 0 && <div className="flex flex-wrap space-x-2 mt-4">
                         <YearButton label="6M" value="6M" />
                         <YearButton label="1Y" value="1Y" />
                         <YearButton label="3Y" value="3Y" />

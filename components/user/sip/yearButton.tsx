@@ -22,7 +22,7 @@ const YearButton: React.FC<YearButtonProps> = ({ label, value }) => {
     }
 
     return (
-        <Button onClick={handleClick} variant={timeframe === value ? 'secondary' : 'outline'}>
+        <Button className='mt-1.5' onClick={handleClick} variant={timeframe === value ? 'secondary' : 'outline'}>
             {label}
         </Button>
     );
