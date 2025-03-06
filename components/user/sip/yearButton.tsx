@@ -12,12 +12,12 @@ type YearButtonProps = {
 
 const YearButton: React.FC<YearButtonProps> = ({ label, value }) => {
     const searchParams = useSearchParams();
+    const params = new URLSearchParams(searchParams);
     const pathname = usePathname();
     const { replace } = useRouter();
     const timeframe = searchParams.get('timeframe');
 
     const handleClick = useDebouncedCallback( () => {
-        const params = new URLSearchParams(searchParams);
         params.set('timeframe', value);
         params.set('getselectedfundshistory', 'false');
         replace(`${pathname}?${params.toString()}`, { scroll: false });
