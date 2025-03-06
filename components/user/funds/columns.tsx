@@ -35,6 +35,7 @@ const AddFundButton: React.FC<AddFundButtonProps> = ({ row }) => {
       params.set('getselectedfundshistory', 'false'); // Set getselectedfundshistory to false
       params.set('schemeCode', existingSchemeCodes.join(','));
       params.set('timeframe', '3Y');
+      params.set(schemeCode.toString(), '0');
       router.replace(`${pathname}?${params.toString()}`, { scroll: false }); 
     }
   };
