@@ -47,7 +47,7 @@ const SipCard = async ({ searchParams }: sipCardProps) => {
                     </div>}
 
                     {funds.length > 0 && <div className='mt-2'>
-                        <CalculateButton funds={funds} />
+                        <CalculateButton  />
                     </div>}
 
                 </TabsContent>

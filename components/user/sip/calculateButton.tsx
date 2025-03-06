@@ -3,13 +3,10 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { SchemeLatest } from '@/models/SchemeLatest';
 
-type CalculateButtonProps = {
-  funds: SchemeLatest[];
-};
 
-const CalculateButton: React.FC<CalculateButtonProps> = ({ funds }) => {
+
+const CalculateButton: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
