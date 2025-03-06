@@ -43,6 +43,7 @@ const SipCard = async ({ searchParams }: sipCardProps) => {
                         <YearButton label="1Y" value="1Y" />
                         <YearButton label="3Y" value="3Y" />
                         <YearButton label="5Y" value="5Y" />
+                        <YearButton label="8Y" value="8Y" />
                         <YearButton label="10Y" value="10Y" />
                     </div>}
 

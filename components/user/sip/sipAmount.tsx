@@ -3,6 +3,7 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useDebouncedCallback } from 'use-debounce';
 
 type SipAmountInputProps = {
   schemeCode: number;
@@ -14,11 +15,11 @@ const SipAmountInput: React.FC<SipAmountInputProps> = ({ schemeCode }) => {
   const pathname = usePathname();
   const params = new URLSearchParams(searchParams);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = useDebouncedCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     params.set(schemeCode.toString(), e.target.value);
     params.set('getselectedfundshistory', 'false'); 
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false }); 
-  }
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  },300)
 
   return (
     <Input

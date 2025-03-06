@@ -122,6 +122,9 @@ export async function getDateRange(period: string): Promise<{ startDate: string,
         case "5Y":
             startDate.setFullYear(startDate.getFullYear() - 5);
             break;
+        case "8Y":
+            startDate.setFullYear(startDate.getFullYear() - 8);
+            break;
         case "10Y":
             startDate.setFullYear(startDate.getFullYear() - 10);
             break;

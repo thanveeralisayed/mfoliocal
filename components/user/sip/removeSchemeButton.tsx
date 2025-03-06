@@ -23,7 +23,7 @@ const RemoveSchemeButton: React.FC<RemoveSchemeButtonProps> = ({ schemeCode }) =
     }
 
     params.set('schemeCode', existingSchemeCodes.join(','));
-    params.set('getselectedfundshistory', 'false'); // Set getselectedfundshistory to false
+    params.set('getselectedfundshistory', 'false'); 
     params.delete(schemeCode.toString()); 
     params.delete('timeframe');
     router.replace(`${pathname}?${params.toString()}`, { scroll: false }); 

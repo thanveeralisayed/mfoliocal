@@ -21,11 +21,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
             <Suspense key={params.schemeCode}  fallback={<Loading/>}>
               <SipCard searchParams={params} />
             </Suspense>
-            <Suspense key={params.getselectedfundshistory}  fallback={<Loading/>}>
+            <Suspense key={params.getselectedfundshistory || params.timeframe}  fallback={<Loading/>}>
               <AllReturns params={params} />
             </Suspense>
           </div>
-          <Suspense key={params.getselectedfundshistory} fallback={<Loading/>}>
+          <Suspense key={params.getselectedfundshistory || params.timeframe} fallback={<Loading/>}>
             <FundReturns searchParams={params} />
           </Suspense>
         </div>
@@ -34,7 +34,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
             <Suspense key={params.schemeCode} fallback={<Loading/>}>
               <SipCard key={params.schemeCode} searchParams={params} />
             </Suspense>
-            <Suspense key={params.getselectedfundshistory}  fallback={<Loading/>}>
+            <Suspense key={params.getselectedfundshistory || params.timeframe}  fallback={<Loading/>}>
               <AllReturns params={params} />
             </Suspense>
           </div>

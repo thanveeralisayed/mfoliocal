@@ -18,7 +18,6 @@ const YearButton: React.FC<YearButtonProps> = ({ label, value }) => {
 
     const handleClick =  () => {
         params.set('timeframe', value);
-        params.set('getselectedfundshistory', 'false');
         replace(`${pathname}?${params.toString()}`, { scroll: false });
     }
 
