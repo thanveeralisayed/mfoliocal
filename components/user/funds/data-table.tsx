@@ -15,10 +15,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 
 
 import { Button } from "@/components/ui/button"
+import { parseAsInteger, useQueryState } from "nuqs"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -36,28 +36,21 @@ export function DataTable<TData, TValue>({
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
-
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const { replace } = useRouter();
+  let [,setOffset] = useQueryState('offset', { shallow: false, scroll: false, defaultValue: '0' })
 
   const onNextPage = () => {
     offset = offset + 5
-    const params = new URLSearchParams(searchParams);
-    params.set('offset', offset.toString());
-    replace(`${pathname}?${params.toString()}`, { scroll: false });
+    setOffset(offset.toString())
   }
 
   const onPreviousPage = () => {
-    offset = offset - 5
-    const params = new URLSearchParams(searchParams);
+     offset = offset -5
 
-    if (offset >= 0) {
-      params.set('offset', offset.toString());
+    if (parseInt(offset.toString()) >= 0) {
+      setOffset(offset.toString())
     } else {
-      params.delete('offset');
+      setOffset(null)
     }
-    replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   return (

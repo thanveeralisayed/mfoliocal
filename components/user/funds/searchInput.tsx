@@ -1,28 +1,25 @@
 'use client'
 import { Input } from '@/components/ui/input'
-import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import { useQueryState } from 'nuqs';
 import React from 'react'
 import { useDebouncedCallback } from 'use-debounce';
 
 
 
 const SearchFundsInput = () => {
-    const searchParams = useSearchParams();
-    const pathname = usePathname();
-    const { replace } = useRouter();
+    const [search, setSearch] = useQueryState('search', { shallow: false, scroll: false })
+    const [, setOffset] = useQueryState('offset', { shallow: false, scroll: false })
 
 
     const handleSearch = useDebouncedCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const search = e.target.value;
-        const params = new URLSearchParams(searchParams);
-        params.set('search', search);
-        params.set('offset', "0");
-        replace(`${pathname}?${params.toString()}`, { scroll: false });
+        setSearch(search)
+        setOffset('0');
     }, 100)
 
 
     return (
-        <Input defaultValue={searchParams.get('search')?.toString()} type="text" onChange={handleSearch} className='py-5' placeholder="Search schemes" />
+        <Input defaultValue={search||''} type="text" onChange={handleSearch} className='py-5' placeholder="Search schemes" />
     )
 }
 
