@@ -2,31 +2,31 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { XIcon } from 'lucide-react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useQueryState } from 'nuqs';
 
 type RemoveSchemeButtonProps = {
   schemeCode: number;
 };
 
 const RemoveSchemeButton: React.FC<RemoveSchemeButtonProps> = ({ schemeCode }) => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
+  const [existingSchemes, setExistingSchemeCodes] = useQueryState('schemeCode', { shallow: false })
+  const [, setAmount] = useQueryState(`${schemeCode}`)
+  const [, setHistoryGet] = useQueryState('getselectedfundshistory');
+  const [, setTimeframe] = useQueryState('timeframe');
 
   const handleRemoveScheme = () => {
-    const params = new URLSearchParams(searchParams);
-    const existingSchemeCodes = (params.get('schemeCode') || '').split(',').filter(code => code.length > 0);
-    const schemeCodeIndex = existingSchemeCodes.indexOf(schemeCode.toString());
 
-    if (schemeCodeIndex !== -1) {
-      existingSchemeCodes.splice(schemeCodeIndex, 1);
+    const existingSchemeCodes = existingSchemes?.split(',').filter(code => code.length > 0);
+    const schemeCodeIndex = existingSchemeCodes?.indexOf(schemeCode.toString());
+
+    if (schemeCodeIndex !== undefined && schemeCodeIndex !== -1) {
+      existingSchemeCodes?.splice(schemeCodeIndex, 1);
     }
 
-    params.set('schemeCode', existingSchemeCodes.join(','));
-    params.set('getselectedfundshistory', 'false'); 
-    params.delete(schemeCode.toString()); 
-    params.delete('timeframe');
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false }); 
+    setExistingSchemeCodes(existingSchemeCodes?.join(',') || null)
+    setHistoryGet('false')
+    setAmount(null)
+    setTimeframe(null);
   };
 
   return (

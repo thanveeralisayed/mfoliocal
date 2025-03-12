@@ -2,22 +2,15 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useQueryState } from 'nuqs';
 
 
 
 const CalculateButton: React.FC = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
+  const [, setHistoryGet] = useQueryState('getselectedfundshistory',{shallow:false,scroll:false});
 
   const handleCalculate = async () => {
-    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-    await delay(100);
-    const params = new URLSearchParams(searchParams);
-    params.set('getselectedfundshistory', 'true');
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false }); 
-
+    setHistoryGet('true');
   };
 
   return (
