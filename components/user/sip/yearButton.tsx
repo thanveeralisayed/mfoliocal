@@ -11,14 +11,12 @@ type YearButtonProps = {
 
 const YearButton: React.FC<YearButtonProps> = ({ label, value }) => {
     const [timeframe, setTimeframe] = useQueryState('timeframe', { shallow: false });
-    const [, setHistoryGet] = useQueryState('getselectedfundshistory');
 
 
 
     return (
         <Button className='mt-1.5' onClick={() => {
             setTimeframe(value)
-            //setHistoryGet('false')
         }} variant={timeframe === value ? 'secondary' : 'outline'}>
             {label}
         </Button>

@@ -18,7 +18,7 @@ import {
 
 
 import { Button } from "@/components/ui/button"
-import { parseAsInteger, useQueryState } from "nuqs"
+import { useQueryState } from "nuqs"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -36,7 +36,7 @@ export function DataTable<TData, TValue>({
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
-  let [,setOffset] = useQueryState('offset', { shallow: false, scroll: false, defaultValue: '0' })
+  const [,setOffset] = useQueryState('offset', { shallow: false, scroll: false, defaultValue: '0' })
 
   const onNextPage = () => {
     offset = offset + 5
