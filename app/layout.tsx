@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/user/navbar";
 import { ThemeProvider } from "@/components/user/theme-provider";
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 
 
@@ -26,8 +27,10 @@ export default function RootLayout({
             disableTransitionOnChange
           >
         <Navbar/>
+        <GoogleAnalytics gaId="G-LSXNKFMN4W" />
         <NuqsAdapter>{children}</NuqsAdapter>
         </ThemeProvider>
+        
       </body>
     </html>
   );
