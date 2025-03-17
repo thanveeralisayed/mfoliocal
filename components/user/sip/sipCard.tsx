@@ -33,7 +33,7 @@ const SipCard = async ({ searchParams }: sipCardProps) => {
                                 <RemoveSchemeButton schemeCode={fund.meta.scheme_code} />
                             </div>
                             <div>
-                                <h3 className="text-lg font-semibold">{fund.meta.scheme_name}</h3>
+                                <h3 className="text-lg font-semibold p-3">{fund.meta.scheme_name}</h3>
                                 <SipAmountInput schemeCode={fund.meta.scheme_code} />
                             </div>
                         </div>
