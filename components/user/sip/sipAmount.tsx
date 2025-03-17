@@ -18,6 +18,7 @@ const SipAmountInput: React.FC<SipAmountInputProps> = ({ schemeCode }) => {
   return (
     <Input
       id={`sip-amount-${schemeCode}`}
+      placeholder='SIP Amount'
       type="number"
       defaultValue={amount || ''}
       onChange={e => {
