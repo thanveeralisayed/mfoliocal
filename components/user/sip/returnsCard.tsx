@@ -19,10 +19,10 @@ const ReturnsCard: React.FC<ReturnsCardProps> = ({ returns }) => {
                     <div>Total Invested: ₹{returns.totalInvested}</div>
                     <div>
                         Total: ₹{returns.total} 
-                        <span className="text-green-500"> ({growthPercentage.toFixed(2)}%)</span>
+                        <span className={growthPercentage > 0?"text-green-500" :"text-red-500"}> ({growthPercentage.toFixed(2)}%)</span>
                     </div>
                     <div>Total Units: {returns.totalUnits} units</div>
-                    <div>Returns: ₹{returns.returns}</div>
+                    <div>Returns: ₹<span className={growthPercentage > 0?"text-green-500" :"text-red-500"}> {returns.returns}</span></div>
                 </div>
             </CardContent>
         </Card>
