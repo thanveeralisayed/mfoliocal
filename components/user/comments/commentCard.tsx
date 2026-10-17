@@ -63,24 +63,27 @@ export function CommentCard({ comment }: CommentCardProps) {
   }, [comment.createdAt])
 
   return (
-    <Card className="p-4 transition-all duration-200 hover:shadow-md border-border/60 bg-card/60 backdrop-blur-xs">
+    <Card className="p-3.5 sm:p-4 transition-all duration-200 hover:shadow-md border-border/60 bg-card/60 backdrop-blur-xs">
       <CardContent className="p-0 flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-3">
+        <div className="flex items-start justify-between gap-2.5">
+          <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
             <div
-              className={`flex size-10 items-center justify-center rounded-full bg-gradient-to-br ${gradient} text-white font-semibold text-sm shadow-xs shrink-0`}
+              className={`flex size-9 sm:size-10 items-center justify-center rounded-full bg-gradient-to-br ${gradient} text-white font-semibold text-xs sm:text-sm shadow-xs shrink-0 mt-0.5`}
             >
               {initials}
             </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h4 className="font-semibold text-sm leading-none text-foreground">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
+                <h4 className="font-semibold text-sm leading-tight text-foreground truncate">
                   {comment.name}
                 </h4>
                 {comment.referralSource && (
-                  <Badge variant="secondary" className="text-[11px] font-normal py-0 h-5 gap-1">
-                    <Compass className="size-3 text-muted-foreground" />
-                    <span>via {comment.referralSource}</span>
+                  <Badge
+                    variant="secondary"
+                    className="text-[11px] font-normal py-0 h-5 gap-1 max-w-full shrink min-w-0"
+                  >
+                    <Compass className="size-3 text-muted-foreground shrink-0" />
+                    <span className="truncate">via {comment.referralSource}</span>
                   </Badge>
                 )}
               </div>
@@ -90,20 +93,21 @@ export function CommentCard({ comment }: CommentCardProps) {
 
           <button
             onClick={handleLike}
-            className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full transition-colors border ${
+            className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full transition-colors border shrink-0 whitespace-nowrap self-start ${
               hasLiked
                 ? "bg-primary/10 border-primary/30 text-primary font-medium"
-                : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
+                : "border-border/60 hover:border-border text-muted-foreground hover:bg-accent hover:text-foreground"
             }`}
             title="Mark as helpful"
+            aria-label="Mark as helpful"
             type="button"
           >
-            <ThumbsUp className={`size-3.5 ${hasLiked ? "fill-primary" : ""}`} />
+            <ThumbsUp className={`size-3.5 shrink-0 ${hasLiked ? "fill-primary" : ""}`} />
             <span>{likes > 0 ? likes : "Helpful"}</span>
           </button>
         </div>
 
-        <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap pl-1">
+        <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap pl-1 break-words">
           {comment.comment}
         </p>
       </CardContent>
