@@ -98,66 +98,67 @@ export function PrepaymentSavingsCard({
           </div>
         </div>
 
-        {/* Big Savings Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        {/* Big Savings Stats Grid: 2x2 layout for spacious, non-overflowing numbers */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           {/* 1. Total Interest Saved */}
-          <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex flex-col justify-between">
-            <span className="text-xs font-medium text-emerald-800 dark:text-emerald-300">
+          <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex flex-col justify-between min-w-0">
+            <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">
               Total Interest Saved
             </span>
-            <div className="mt-2">
-              <span className="text-2xl sm:text-3xl font-extrabold text-emerald-700 dark:text-emerald-400 tracking-tight">
+            <div className="mt-2 min-w-0">
+              <span className="text-xl sm:text-2xl font-extrabold text-emerald-700 dark:text-emerald-400 tracking-tight block truncate">
                 {formatINR(interestSaved)}
               </span>
-              <p className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-0.5">
-                Saved in pure interest
+              <p className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-0.5 truncate">
+                Saved in pure compound interest
               </p>
             </div>
           </div>
 
           {/* 2. Tenure Saved */}
-          <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/25 flex flex-col justify-between">
-            <span className="text-xs font-medium text-blue-800 dark:text-blue-300 flex items-center gap-1">
-              <Clock className="size-3.5" />
+          <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/25 flex flex-col justify-between min-w-0">
+            <span className="text-xs font-semibold text-blue-800 dark:text-blue-300 flex items-center gap-1">
+              <Clock className="size-3.5 shrink-0" />
               Tenure Reduced
             </span>
-            <div className="mt-2">
-              <span className="text-2xl sm:text-3xl font-extrabold text-blue-700 dark:text-blue-400 tracking-tight">
+            <div className="mt-2 min-w-0">
+              <span className="text-xl sm:text-2xl font-extrabold text-blue-700 dark:text-blue-400 tracking-tight block truncate">
                 {yearsSaved > 0 && `${yearsSaved}y `}
                 {monthsSaved > 0 ? `${monthsSaved}m` : yearsSaved === 0 ? "0m" : ""}
+                <span className="text-xs font-normal text-muted-foreground ml-1.5">sooner</span>
               </span>
-              <p className="text-[11px] text-blue-600/80 dark:text-blue-400/80 mt-0.5">
+              <p className="text-[11px] text-blue-600/80 dark:text-blue-400/80 mt-0.5 truncate">
                 Closes in {effectiveTenureYears}y (was {tenureYears}y)
               </p>
             </div>
           </div>
 
           {/* 3. Prepayments Paid */}
-          <div className="p-4 rounded-xl bg-card border border-border/70 flex flex-col justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
+          <div className="p-4 rounded-xl bg-card border border-border/70 flex flex-col justify-between min-w-0">
+            <span className="text-xs font-semibold text-muted-foreground">
               Total Prepayment Made
             </span>
-            <div className="mt-2">
-              <span className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+            <div className="mt-2 min-w-0">
+              <span className="text-xl sm:text-2xl font-bold text-foreground tracking-tight block truncate">
                 {formatINR(totalPrepaymentPaid)}
               </span>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
                 Net Savings: {formatINR(netSavings)}
               </p>
             </div>
           </div>
 
           {/* 4. Prepayment Multiplier ROI */}
-          <div className="p-4 rounded-xl bg-card border border-border/70 flex flex-col justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
+          <div className="p-4 rounded-xl bg-card border border-border/70 flex flex-col justify-between min-w-0">
+            <span className="text-xs font-semibold text-muted-foreground">
               Prepayment ROI Multiplier
             </span>
-            <div className="mt-2">
-              <span className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">
+            <div className="mt-2 min-w-0">
+              <span className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight block truncate">
                 {savingsMultiplier}x
               </span>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                Every ₹1 prepaid saves ₹{savingsMultiplier}
+              <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                Every ₹1 prepaid saves ₹{savingsMultiplier} in interest
               </p>
             </div>
           </div>
