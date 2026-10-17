@@ -2,108 +2,158 @@
 
 import { Returns } from "@/models/returns";
 import { ReturnsHistory } from "@/models/returnsHistory";
-import { Schemes } from "@/models/scheme";
 import { SchemeHistory } from "@/models/schemeHistory"
+import { calculateAccurateSIP, parseDateString } from "./sipMath";
 
-
-
-interface NavEntry {
-    date: string;
-    nav: number;
-    returns: number;
-}
-
-function parseDate(dateStr: string): Date {
-    const [day, month, year] = dateStr.split("-").map(Number);
-    return new Date(year, month - 1, day);
-}
-
-function calculateSIPReturn(navData: NavEntry[], sipAmount: number, interval: "weekly" | "monthly" | "quarterly") {
-    navData.reverse();
-    let intervalDays: number;
-    switch (interval) {
-        case "weekly":
-            intervalDays = 7;
-            break;
-        case "monthly":
-            intervalDays = 30;
-            break;
-        case "quarterly":
-            intervalDays = 90;
-            break;
-        default:
-            throw new Error("Invalid interval");
-    }
-
-    let totalUnits = 0;
-    let lastDate = parseDate(navData[0].date);
-    let initialNav = navData[0].nav;
-    totalUnits = sipAmount / initialNav;
-    let totalInvested = sipAmount;
-
-    for (let i = 1; i < navData.length; i++) {
-        let { date, nav } = navData[i];
-        let currentDate = parseDate(date);
-        // Take first investment or investments at correct intervals
-        if ((currentDate.getTime() - lastDate.getTime()) >= intervalDays * 24 * 60 * 60 * 1000) {
-            let unitsBought = sipAmount / nav;
-            totalUnits += unitsBought;
-            totalInvested += sipAmount;
-            const returns = totalUnits * nav;
-            navData[i].returns = parseFloat(returns.toFixed(2))
-            lastDate = currentDate; // Update last investment date
-        }
-        else {
-            const returns = totalUnits * nav;
-            navData[i].returns = parseFloat(returns.toFixed(2))
-        }
-    }
-
-    // Use the latest NAV to calculate the final value
-    let finalValue = totalUnits * navData[navData.length - 1].nav;
-    let returns = finalValue - totalInvested;
-    totalInvested = parseFloat(totalInvested.toFixed(2));
-    finalValue = parseFloat(finalValue.toFixed(2));
-    totalUnits = parseFloat(totalUnits.toFixed(3));
-    returns = parseFloat(returns.toFixed(2));
-    return { total: finalValue, totalInvested: totalInvested, totalUnits: totalUnits, returns };
-}
-
-
-
-export const getReturnsForSipByFunds = async (schemeData: SchemeHistory[]): Promise<Returns[]> => {
+export const getReturnsForSipByFunds = async (
+    schemeData: SchemeHistory[],
+    options?: { stepUpPercent?: number; frequency?: "monthly" | "weekly" }
+): Promise<Returns[]> => {
     const returns: Returns[] = schemeData.map((scheme) => {
         const schemeName = scheme.meta.scheme_name;
         const schemeCode = scheme.meta.scheme_code;
         const schemeHistory = scheme;
-        const { total, totalInvested, totalUnits, returns } = calculateSIPReturn(scheme.data, scheme.meta.sipAmount || 0, "monthly");
-        return { returns, schemeCode, schemeHistory, schemeName, total, totalInvested, totalUnits };
+        const sipAmount = scheme.meta.sipAmount || 0;
+
+        // Keep full daily timeline points for precise multi-fund alignment
+        const result = calculateAccurateSIP(scheme.data, sipAmount, {
+            frequency: options?.frequency || "monthly",
+            stepUpPercent: options?.stepUpPercent || 0,
+            targetPoints: 9999,
+        });
+
+        // Also update scheme.data with returns for legacy compatibility
+        if (result.timeline && result.timeline.length > 0) {
+            scheme.data = result.timeline.map(t => ({
+                date: t.date,
+                nav: t.nav,
+                returns: t.value,
+            }));
+        }
+
+        return {
+            returns: result.absoluteGain,
+            schemeCode,
+            schemeHistory,
+            schemeName,
+            total: result.currentValue,
+            totalInvested: result.totalInvested,
+            totalUnits: result.totalUnits,
+            xirr: result.xirr,
+            growthPercentage: result.growthPercentage,
+            wealthMultiplier: result.wealthMultiplier,
+            timeline: result.timeline,
+        };
     });
     return returns;
 }
-export const processReturns = async (returnsData: Returns[]) => {
-    const combinedReturns: ReturnsHistory[] = [];
 
+export const processReturns = async (returnsData: Returns[]) => {
+    if (!returnsData || returnsData.length === 0) return [];
+
+    // Step 1: Collect union of all trading dates across all selected funds
+    const dateTimestampMap = new Map<string, number>();
     returnsData.forEach((scheme) => {
-        scheme.schemeHistory.data.forEach((entry) => {
-            const existingEntry = combinedReturns.find((e) => e.date === entry.date);
-            if (existingEntry) {
-                existingEntry[scheme.schemeName] = entry.returns;
-            } else {
-                combinedReturns.push({ date: entry.date, [scheme.schemeName]: Number(entry.returns) });
+        const timeline = scheme.timeline || [];
+        timeline.forEach((pt) => {
+            if (!dateTimestampMap.has(pt.date)) {
+                dateTimestampMap.set(pt.date, parseDateString(pt.date).getTime());
             }
         });
     });
 
-    // Filter out dates that do not have returns for all funds
-    const allSchemeNames = returnsData.map(scheme => scheme.schemeName);
-    const filteredReturns = combinedReturns.filter(entry =>
-        allSchemeNames.every(schemeName => schemeName in entry)
-    );
+    const sortedDates = Array.from(dateTimestampMap.entries())
+        .sort((a, b) => a[1] - b[1])
+        .map(([date, time]) => ({ date, time }));
 
-    return filteredReturns;
+    if (sortedDates.length === 0) return [];
+
+    // Step 2: Sample ~80 evenly distributed dates across the timeline (always preserving start and latest)
+    const targetPoints = 80;
+    const sampledDates: typeof sortedDates = [];
+    if (sortedDates.length <= targetPoints) {
+        sampledDates.push(...sortedDates);
+    } else {
+        const step = Math.max(1, Math.floor(sortedDates.length / targetPoints));
+        for (let i = 0; i < sortedDates.length; i += step) {
+            sampledDates.push(sortedDates[i]);
+        }
+        if (sampledDates[sampledDates.length - 1].date !== sortedDates[sortedDates.length - 1].date) {
+            sampledDates.push(sortedDates[sortedDates.length - 1]);
+        }
+    }
+
+    // Step 3: Index each fund's timeline with timestamps for fast forward-fill binary/linear search
+    const fundIndexedTimelines = returnsData.map((scheme) => ({
+        schemeName: scheme.schemeName,
+        schemeCode: scheme.schemeCode,
+        timeline: (scheme.timeline || []).map((pt) => ({
+            ...pt,
+            time: parseDateString(pt.date).getTime(),
+        })),
+    }));
+
+    // Step 4: Build continuous, aligned dataset with forward-filling (prevents any undefined or broken lines)
+    const alignedCombined: Array<{
+        date: string;
+        totalInvested: number;
+        totalValue: number;
+        totalGain: number;
+        gainPercent: number;
+        [key: string]: any;
+    }> = [];
+
+    // Track active pointer index for each fund for linear O(N) sweep
+    const pointers = new Array(fundIndexedTimelines.length).fill(0);
+    const lastKnown = new Array(fundIndexedTimelines.length).fill(null);
+
+    for (const target of sampledDates) {
+        let totalInvestedOnDate = 0;
+        let totalValueOnDate = 0;
+        const rowData: Record<string, any> = {
+            date: target.date,
+        };
+
+        fundIndexedTimelines.forEach((fund, fundIndex) => {
+            const list = fund.timeline;
+            let ptr = pointers[fundIndex];
+
+            // Advance pointer to the latest point <= target.time
+            while (ptr < list.length && list[ptr].time <= target.time) {
+                lastKnown[fundIndex] = list[ptr];
+                ptr++;
+            }
+            pointers[fundIndex] = ptr;
+
+            const point = lastKnown[fundIndex];
+            const fundInvested = point ? point.invested : 0;
+            const fundValue = point ? point.value : 0;
+            const fundGainPct = point ? point.gainPercent : 0;
+
+            totalInvestedOnDate += fundInvested;
+            totalValueOnDate += fundValue;
+
+            // Safe alphanumeric key without special symbols/dots for Recharts
+            rowData[`fund_${fund.schemeCode}`] = fundValue;
+            rowData[`fund_${fund.schemeCode}__pct`] = fundGainPct;
+            // Also store schemeName key for backwards compatibility
+            rowData[fund.schemeName] = fundValue;
+            rowData[`${fund.schemeName}__pct`] = fundGainPct;
+        });
+
+        const totalGainOnDate = totalValueOnDate - totalInvestedOnDate;
+        const gainPercentOnDate = totalInvestedOnDate > 0 ? (totalGainOnDate / totalInvestedOnDate) * 100 : 0;
+
+        rowData.totalInvested = Math.round(totalInvestedOnDate);
+        rowData.totalValue = Math.round(totalValueOnDate);
+        rowData.totalGain = Math.round(totalGainOnDate);
+        rowData.gainPercent = parseFloat(gainPercentOnDate.toFixed(2));
+
+        alignedCombined.push(rowData as any);
+    }
+
+    return alignedCombined as unknown as ReturnsHistory[];
 }
-
 
 export async function getDateRange(period: string): Promise<{ startDate: string, endDate: string }> {
     const endDate = new Date();
@@ -129,7 +179,8 @@ export async function getDateRange(period: string): Promise<{ startDate: string,
             startDate.setFullYear(startDate.getFullYear() - 10);
             break;
         default:
-            throw new Error("Invalid period");
+            startDate.setFullYear(startDate.getFullYear() - 3);
+            break;
     }
 
     const formatDate = (date: Date): string => {

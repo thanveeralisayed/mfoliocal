@@ -18,9 +18,7 @@ const AllReturns = async ({params}: AllReturnProps) => {
       const funds: SchemeLatest[] = await getSelectedFundsDataLatest(existingSchemeCodes) || [];
       funds.forEach(fund => {
         const sipAmount: string = (params as Record<string, string>)[`${fund.meta.scheme_code}`];
-        if (sipAmount) {
-          fund.sipAmount = parseFloat(sipAmount);
-        }
+        fund.sipAmount = sipAmount && parseFloat(sipAmount) > 0 ? parseFloat(sipAmount) : 5000;
       });
       selectedFundHistory = await getSelectedFundsDataHistory(funds, timeframe);
     }
