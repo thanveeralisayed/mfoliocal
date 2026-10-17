@@ -9,7 +9,6 @@ import {
 } from "firebase/firestore"
 import { db, isFirebaseConfigured } from "./firebase"
 import { UserComment } from "@/models/comment"
-import { INITIAL_DUMMY_COMMENTS } from "@/components/user/comments/dummyComments"
 
 const COMMENTS_COLLECTION = "comments"
 const STORAGE_KEY = "mfoliocal_comments_v1"
@@ -77,7 +76,7 @@ function loadLocalComments(
   onUpdate: (comments: UserComment[], isLive: boolean) => void
 ) {
   if (typeof window === "undefined") {
-    onUpdate(INITIAL_DUMMY_COMMENTS, false)
+    onUpdate([], false)
     return
   }
   try {
@@ -92,7 +91,7 @@ function loadLocalComments(
   } catch (e) {
     console.warn("Could not read local comments:", e)
   }
-  onUpdate(INITIAL_DUMMY_COMMENTS, false)
+  onUpdate([], false)
 }
 
 // Add a new comment
@@ -128,7 +127,7 @@ export async function addComment(
   if (typeof window !== "undefined") {
     try {
       const existing = localStorage.getItem(STORAGE_KEY)
-      const currentList: UserComment[] = existing ? JSON.parse(existing) : INITIAL_DUMMY_COMMENTS
+      const currentList: UserComment[] = existing ? JSON.parse(existing) : []
       const updated = [localComment, ...currentList]
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
     } catch (e) {
