@@ -17,6 +17,8 @@ import { PrepaymentSavingsCard } from "./prepaymentSavingsCard"
 import { AmortizationTable } from "./amortizationTable"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { useFinancialAssistant } from "@/context/FinancialAssistantContext"
+import { AskKuberButton } from "@/components/user/chat/askKuberButton"
 
 const DEFAULT_PREPAYMENT: PrepaymentOptions = {
   extraMonthly: 0,
@@ -27,6 +29,7 @@ const DEFAULT_PREPAYMENT: PrepaymentOptions = {
 }
 
 export function LoanCalculator() {
+  const { updateLoanContext } = useFinancialAssistant()
   const [principal, setPrincipal] = React.useState<number>(5000000) // Default ₹50 Lakhs
   const [annualRate, setAnnualRate] = React.useState<number>(8.5) // Default 8.5%
   const [tenureYears, setTenureYears] = React.useState<number>(20) // Default 20 Years
@@ -45,6 +48,32 @@ export function LoanCalculator() {
   const prepaymentResult = React.useMemo(() => {
     return calculateLoanWithPrepayment(principal, annualRate, tenureYears, prepaymentOptions)
   }, [principal, annualRate, tenureYears, prepaymentOptions])
+
+  // Sync loan state with global AI assistant context
+  React.useEffect(() => {
+    updateLoanContext({
+      principal,
+      annualRate,
+      tenureYears,
+      monthlyEmi: standardResult.monthlyEmi,
+      totalInterest: standardResult.totalInterest,
+      totalPayment: standardResult.totalPayment,
+      hasPrepayment: prepaymentResult.hasPrepayment,
+      extraMonthly: prepaymentOptions.extraMonthly,
+      annualLumpSum: prepaymentOptions.annualLumpSum,
+      interestSaved: prepaymentResult.interestSaved,
+      monthsSaved: prepaymentResult.monthsSaved,
+      yearsSaved: prepaymentResult.yearsSaved,
+    })
+  }, [
+    principal,
+    annualRate,
+    tenureYears,
+    standardResult,
+    prepaymentResult,
+    prepaymentOptions,
+    updateLoanContext,
+  ])
 
   // One-click strategy applicator
   const handleApplyStrategy = (strategy: string) => {
@@ -134,6 +163,29 @@ export function LoanCalculator() {
               />
             </div>
           )}
+
+          {/* AI Consultation Prompt Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-primary/10 via-indigo-500/10 to-violet-500/10 border border-primary/20 shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <div className="size-7 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0">
+                <Sparkles className="size-4 animate-pulse" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-foreground">
+                  Ask Kuber about this ₹{(principal / 100000).toFixed(0)}L Loan
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  Calculate prepayment savings, tenure reduction, or compare against an equity SIP.
+                </p>
+              </div>
+            </div>
+            <AskKuberButton
+              promptText={`Can you analyze my loan of ₹${(principal / 100000).toFixed(0)} Lakhs at ${annualRate}% for ${tenureYears} years (Monthly EMI: ₹${Math.round(standardResult.monthlyEmi).toLocaleString("en-IN")})? What is the smartest prepayment strategy and how much interest can I realistically save?`}
+              label="Consult Kuber AI"
+              variant="default"
+              className="self-start sm:self-auto shrink-0"
+            />
+          </div>
 
           {/* Visualizations Card */}
           <Card className="border-border/80 shadow-sm bg-card overflow-hidden">

@@ -8,6 +8,8 @@ import RemoveSchemeButton from './removeSchemeButton';
 import SipAmountInput from './sipAmount';
 import CalculateButton from './calculateButton';
 import YearButton from './yearButton';
+import { FundContextTracker } from '@/components/user/chat/fundContextTracker';
+import { AskKuberButton } from '@/components/user/chat/askKuberButton';
 
 type sipCardProps = {
     searchParams: SearchParams
@@ -22,6 +24,7 @@ const SipCard = async ({ searchParams }: sipCardProps) => {
 
     return (
         <Card className="p-4">
+            <FundContextTracker funds={funds} />
             <Tabs defaultValue='sip'>
                 <TabsList className="mb-4">
                     <TabsTrigger value="sip">SIP</TabsTrigger>
@@ -47,8 +50,13 @@ const SipCard = async ({ searchParams }: sipCardProps) => {
                         <YearButton label="10Y" value="10Y" />
                     </div>}
 
-                    {funds.length > 0 && <div className='mt-2'>
-                        <CalculateButton  />
+                    {funds.length > 0 && <div className='mt-3 flex items-center justify-between flex-wrap gap-2'>
+                        <CalculateButton />
+                        <AskKuberButton
+                            promptText={`Can you analyze the category, risk profile, and long-term compounding expectations for the selected fund(s): ${funds.map(f => f.meta.scheme_name).join(', ')}?`}
+                            label="Ask Kuber About These Funds"
+                            variant="subtle"
+                        />
                     </div>}
 
                 </TabsContent>
