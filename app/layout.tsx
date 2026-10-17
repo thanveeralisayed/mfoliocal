@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body >
+      <body className="min-h-screen bg-background font-sans antialiased pb-24 md:pb-0">
       <ThemeProvider
             attribute="class"
             defaultTheme="system"
