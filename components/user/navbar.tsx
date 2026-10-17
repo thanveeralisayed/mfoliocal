@@ -19,11 +19,11 @@ const Navbar = () => {
         </div>
         <NavigationMenuList className="flex space-x-4">
           <NavigationMenuItem className="mr-0">
-            <Link href="/" legacyBehavior passHref>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+              <Link href="/">
                 Sip Calculator
-              </NavigationMenuLink>
-            </Link>
+              </Link>
+            </NavigationMenuLink>
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
