@@ -31,6 +31,16 @@ interface ChatRequestBody {
       nav?: string
       sipAmount?: number
     }>
+    portfolio?: {
+      totalInvested: number
+      currentValue: number
+      totalGain: number
+      growthPercentage: number
+      xirr: number
+      wealthMultiplier: number
+      timeframe: string
+      fundsCount: number
+    }
   }
 }
 
@@ -76,23 +86,38 @@ ${
     : "- No prepayment plan applied currently."
 }
 IMPORTANT: Whenever answering questions about home loans, ALWAYS reference the user's specific loan numbers above if relevant!`
-  } else if (context?.page === "mutual-funds" && context.funds && context.funds.length > 0) {
-    const fundsList = context.funds
-      .map(
-        (f, i) =>
-          `${i + 1}. ${f.scheme_name}
+  } else if (context?.page === "mutual-funds" && ((context.funds && context.funds.length > 0) || context.portfolio)) {
+    const fundsList = context.funds && context.funds.length > 0
+      ? context.funds
+          .map(
+            (f, i) =>
+              `${i + 1}. ${f.scheme_name}
    - Category: ${f.scheme_category || "N/A"}
    - Fund House: ${f.fund_house || "N/A"}
    - Latest NAV: ₹${f.nav || "N/A"}
    ${f.sipAmount ? `- User SIP Amount: ${formatCurrency(f.sipAmount)}/month` : ""}`
-      )
-      .join("\n")
+          )
+          .join("\n")
+      : "No individual schemes listed."
+
+    const portfolioSnippet = context.portfolio
+      ? `
+CALCULATED PORTFOLIO PERFORMANCE & SIMULATION:
+- Timeframe Analyzed: ${context.portfolio.timeframe}
+- Total Invested Capital: ${formatCurrency(context.portfolio.totalInvested)}
+- Current Portfolio Value: ${formatCurrency(context.portfolio.currentValue)}
+- Net Compounding Profit: ${context.portfolio.totalGain >= 0 ? "+" : ""}${formatCurrency(context.portfolio.totalGain)} (${context.portfolio.growthPercentage >= 0 ? "+" : ""}${context.portfolio.growthPercentage.toFixed(2)}% absolute return)
+- Annualized Portfolio XIRR: ${context.portfolio.xirr}% p.a.
+- Wealth Multiplier: ${context.portfolio.wealthMultiplier.toFixed(2)}x`
+      : ""
 
     contextSnippet = `
 CURRENT USER VIEW & SELECTED MUTUAL FUNDS:
-The user currently has selected the following ${context.funds.length} mutual fund(s) on MfolioCal:
+The user currently has selected ${context.funds?.length || 0} mutual fund(s) on MfolioCal:
 ${fundsList}
-IMPORTANT: When the user asks about risk, categories, or SIP returns, evaluate and explain the specific fund(s) listed above!`
+${portfolioSnippet}
+
+IMPORTANT: When the user asks about returns, XIRR, or risk, evaluate their exact simulation metrics above and provide intelligent, mathematically sound advice!`
   } else {
     contextSnippet = `
 CURRENT USER VIEW: General Navigation / MfolioCal Dashboard.`
