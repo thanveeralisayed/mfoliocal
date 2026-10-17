@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Download, Table as TableIcon } from "lucide-react"
+import { Download, Table as TableIcon, Zap, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import {
@@ -15,13 +15,40 @@ import {
 import { formatINR, YearlyAmortization } from "@/utils/loanCalculations"
 
 interface AmortizationTableProps {
-  schedule: YearlyAmortization[]
+  standardSchedule: YearlyAmortization[]
+  acceleratedSchedule?: YearlyAmortization[]
+  hasPrepayment?: boolean
   principal: number
 }
 
-export function AmortizationTable({ schedule, principal }: AmortizationTableProps) {
+export function AmortizationTable({
+  standardSchedule,
+  acceleratedSchedule,
+  hasPrepayment = false,
+  principal,
+}: AmortizationTableProps) {
+  const [activeTab, setActiveTab] = React.useState<"standard" | "accelerated">(
+    hasPrepayment && acceleratedSchedule && acceleratedSchedule.length > 0
+      ? "accelerated"
+      : "standard"
+  )
+
+  // Auto switch to accelerated when prepayment gets enabled
+  React.useEffect(() => {
+    if (hasPrepayment && acceleratedSchedule && acceleratedSchedule.length > 0) {
+      setActiveTab("accelerated")
+    } else {
+      setActiveTab("standard")
+    }
+  }, [hasPrepayment, acceleratedSchedule])
+
+  const currentSchedule =
+    activeTab === "accelerated" && acceleratedSchedule && acceleratedSchedule.length > 0
+      ? acceleratedSchedule
+      : standardSchedule
+
   const handleExportCSV = () => {
-    if (!schedule.length) return
+    if (!currentSchedule.length) return
 
     const headers = [
       "Year",
@@ -33,7 +60,7 @@ export function AmortizationTable({ schedule, principal }: AmortizationTableProp
       "Remaining Loan (%)",
     ]
 
-    const rows = schedule.map((item) => [
+    const rows = currentSchedule.map((item) => [
       item.year,
       item.openingBalance,
       item.principalPaid,
@@ -50,7 +77,10 @@ export function AmortizationTable({ schedule, principal }: AmortizationTableProp
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement("a")
     link.setAttribute("href", encodedUri)
-    link.setAttribute("download", `mfoliocal_amortization_schedule_${principal}.csv`)
+    link.setAttribute(
+      "download",
+      `mfoliocal_${activeTab}_amortization_schedule_${principal}.csv`
+    )
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -72,16 +102,56 @@ export function AmortizationTable({ schedule, principal }: AmortizationTableProp
             </div>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportCSV}
-            className="gap-2 cursor-pointer text-xs self-start sm:self-auto"
-          >
-            <Download className="size-3.5" />
-            <span>Export CSV</span>
-          </Button>
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            {hasPrepayment && acceleratedSchedule && (
+              <div className="inline-flex items-center bg-muted/60 p-0.5 rounded-lg border border-border/60 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("standard")}
+                  className={`px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+                    activeTab === "standard"
+                      ? "bg-background text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Standard ({standardSchedule.length} Yrs)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("accelerated")}
+                  className={`px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer flex items-center gap-1 ${
+                    activeTab === "accelerated"
+                      ? "bg-emerald-600 text-white shadow-xs font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Zap className="size-3" />
+                  <span>With Prepayment ({acceleratedSchedule.length} Yrs)</span>
+                </button>
+              </div>
+            )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              className="gap-2 cursor-pointer text-xs h-8"
+            >
+              <Download className="size-3.5" />
+              <span>Export CSV</span>
+            </Button>
+          </div>
         </div>
+
+        {activeTab === "accelerated" && (
+          <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-medium">
+            <ShieldCheck className="size-3.5" />
+            <span>
+              Showing accelerated payoff schedule — loan completes in{" "}
+              {acceleratedSchedule?.length || 0} years!
+            </span>
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="p-0">
@@ -105,7 +175,7 @@ export function AmortizationTable({ schedule, principal }: AmortizationTableProp
               </TableRow>
             </TableHeader>
             <TableBody>
-              {schedule.map((row) => (
+              {currentSchedule.map((row) => (
                 <TableRow key={row.year} className="hover:bg-muted/30">
                   <TableCell className="font-bold text-xs text-foreground">
                     Yr {row.year}
@@ -123,7 +193,11 @@ export function AmortizationTable({ schedule, principal }: AmortizationTableProp
                     {formatINR(row.totalPayment)}
                   </TableCell>
                   <TableCell className="text-xs font-semibold text-foreground font-mono">
-                    {formatINR(row.closingBalance)}
+                    {row.closingBalance === 0 ? (
+                      <span className="text-emerald-500 font-bold">₹0 (Paid Off)</span>
+                    ) : (
+                      formatINR(row.closingBalance)
+                    )}
                   </TableCell>
                   <TableCell className="text-xs text-right pr-6">
                     <div className="flex items-center justify-end gap-2">
