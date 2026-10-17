@@ -1,4 +1,5 @@
 
+import CommentSection from "@/components/user/comments/commentSection";
 import Loading from "@/components/loading";
 import FundsTable from "@/components/user/funds/fundsTable";
 import AllReturns from "@/components/user/returns/allReturns";
@@ -40,7 +41,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
           </div>
         </div>
       </div>
-      <div className="mt-8 text-center">
+
+      {/* Community Feedback & Comment Section */}
+      <CommentSection />
+
+      <div className="mt-8 mb-12 text-center">
         <a href="https://www.linkedin.com/in/thanveer-ali-98041a1a3/" target="_blank" rel="noopener noreferrer" className="btn">
           Connect with me on LinkedIn
         </a>
