@@ -163,6 +163,7 @@ export const SipWealthGrowthChart: React.FC<SipWealthGrowthChartProps> = ({ data
               strokeWidth={2}
               strokeDasharray="4 4"
               fill="url(#investedGradient)"
+              connectNulls={true}
               activeDot={{ r: 4, strokeWidth: 1, fill: "#64748B" }}
             />
 
@@ -173,6 +174,7 @@ export const SipWealthGrowthChart: React.FC<SipWealthGrowthChartProps> = ({ data
               stroke="#6366F1"
               strokeWidth={2.5}
               fill="url(#valuationGradient)"
+              connectNulls={true}
               activeDot={{ r: 6, strokeWidth: 2, fill: "#6366F1", stroke: "#FFFFFF" }}
             />
           </AreaChart>

@@ -15,10 +15,11 @@ export const getReturnsForSipByFunds = async (
         const schemeHistory = scheme;
         const sipAmount = scheme.meta.sipAmount || 0;
 
+        // Keep full daily timeline points for precise multi-fund alignment
         const result = calculateAccurateSIP(scheme.data, sipAmount, {
             frequency: options?.frequency || "monthly",
             stepUpPercent: options?.stepUpPercent || 0,
-            targetPoints: 75,
+            targetPoints: 9999,
         });
 
         // Also update scheme.data with returns for legacy compatibility
@@ -50,44 +51,108 @@ export const getReturnsForSipByFunds = async (
 export const processReturns = async (returnsData: Returns[]) => {
     if (!returnsData || returnsData.length === 0) return [];
 
-    // Map by date across all funds
-    const dateMap = new Map<string, {
+    // Step 1: Collect union of all trading dates across all selected funds
+    const dateTimestampMap = new Map<string, number>();
+    returnsData.forEach((scheme) => {
+        const timeline = scheme.timeline || [];
+        timeline.forEach((pt) => {
+            if (!dateTimestampMap.has(pt.date)) {
+                dateTimestampMap.set(pt.date, parseDateString(pt.date).getTime());
+            }
+        });
+    });
+
+    const sortedDates = Array.from(dateTimestampMap.entries())
+        .sort((a, b) => a[1] - b[1])
+        .map(([date, time]) => ({ date, time }));
+
+    if (sortedDates.length === 0) return [];
+
+    // Step 2: Sample ~80 evenly distributed dates across the timeline (always preserving start and latest)
+    const targetPoints = 80;
+    const sampledDates: typeof sortedDates = [];
+    if (sortedDates.length <= targetPoints) {
+        sampledDates.push(...sortedDates);
+    } else {
+        const step = Math.max(1, Math.floor(sortedDates.length / targetPoints));
+        for (let i = 0; i < sortedDates.length; i += step) {
+            sampledDates.push(sortedDates[i]);
+        }
+        if (sampledDates[sampledDates.length - 1].date !== sortedDates[sortedDates.length - 1].date) {
+            sampledDates.push(sortedDates[sortedDates.length - 1]);
+        }
+    }
+
+    // Step 3: Index each fund's timeline with timestamps for fast forward-fill binary/linear search
+    const fundIndexedTimelines = returnsData.map((scheme) => ({
+        schemeName: scheme.schemeName,
+        schemeCode: scheme.schemeCode,
+        timeline: (scheme.timeline || []).map((pt) => ({
+            ...pt,
+            time: parseDateString(pt.date).getTime(),
+        })),
+    }));
+
+    // Step 4: Build continuous, aligned dataset with forward-filling (prevents any undefined or broken lines)
+    const alignedCombined: Array<{
         date: string;
         totalInvested: number;
         totalValue: number;
         totalGain: number;
         gainPercent: number;
         [key: string]: any;
-    }>();
+    }> = [];
 
-    returnsData.forEach((scheme) => {
-        const timeline = scheme.timeline || [];
-        timeline.forEach((pt) => {
-            const existing = dateMap.get(pt.date);
-            if (existing) {
-                existing.totalInvested += pt.invested;
-                existing.totalValue += pt.value;
-                existing.totalGain += pt.gain;
-                existing.gainPercent = existing.totalInvested > 0 ? parseFloat(((existing.totalGain / existing.totalInvested) * 100).toFixed(2)) : 0;
-                existing[scheme.schemeName] = pt.value;
-                existing[`${scheme.schemeName}__pct`] = pt.gainPercent;
-            } else {
-                dateMap.set(pt.date, {
-                    date: pt.date,
-                    totalInvested: pt.invested,
-                    totalValue: pt.value,
-                    totalGain: pt.gain,
-                    gainPercent: pt.invested > 0 ? parseFloat(((pt.gain / pt.invested) * 100).toFixed(2)) : 0,
-                    [scheme.schemeName]: pt.value,
-                    [`${scheme.schemeName}__pct`]: pt.gainPercent,
-                });
+    // Track active pointer index for each fund for linear O(N) sweep
+    const pointers = new Array(fundIndexedTimelines.length).fill(0);
+    const lastKnown = new Array(fundIndexedTimelines.length).fill(null);
+
+    for (const target of sampledDates) {
+        let totalInvestedOnDate = 0;
+        let totalValueOnDate = 0;
+        const rowData: Record<string, any> = {
+            date: target.date,
+        };
+
+        fundIndexedTimelines.forEach((fund, fundIndex) => {
+            const list = fund.timeline;
+            let ptr = pointers[fundIndex];
+
+            // Advance pointer to the latest point <= target.time
+            while (ptr < list.length && list[ptr].time <= target.time) {
+                lastKnown[fundIndex] = list[ptr];
+                ptr++;
             }
-        });
-    });
+            pointers[fundIndex] = ptr;
 
-    const combined = Array.from(dateMap.values());
-    combined.sort((a, b) => parseDateString(a.date).getTime() - parseDateString(b.date).getTime());
-    return combined as unknown as ReturnsHistory[];
+            const point = lastKnown[fundIndex];
+            const fundInvested = point ? point.invested : 0;
+            const fundValue = point ? point.value : 0;
+            const fundGainPct = point ? point.gainPercent : 0;
+
+            totalInvestedOnDate += fundInvested;
+            totalValueOnDate += fundValue;
+
+            // Safe alphanumeric key without special symbols/dots for Recharts
+            rowData[`fund_${fund.schemeCode}`] = fundValue;
+            rowData[`fund_${fund.schemeCode}__pct`] = fundGainPct;
+            // Also store schemeName key for backwards compatibility
+            rowData[fund.schemeName] = fundValue;
+            rowData[`${fund.schemeName}__pct`] = fundGainPct;
+        });
+
+        const totalGainOnDate = totalValueOnDate - totalInvestedOnDate;
+        const gainPercentOnDate = totalInvestedOnDate > 0 ? (totalGainOnDate / totalInvestedOnDate) * 100 : 0;
+
+        rowData.totalInvested = Math.round(totalInvestedOnDate);
+        rowData.totalValue = Math.round(totalValueOnDate);
+        rowData.totalGain = Math.round(totalGainOnDate);
+        rowData.gainPercent = parseFloat(gainPercentOnDate.toFixed(2));
+
+        alignedCombined.push(rowData as any);
+    }
+
+    return alignedCombined as unknown as ReturnsHistory[];
 }
 
 export async function getDateRange(period: string): Promise<{ startDate: string, endDate: string }> {

@@ -54,9 +54,6 @@ export const SipHeroKpis: React.FC<SipHeroKpisProps> = ({ funds, timeframe = "3Y
           <div className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             {formatIndianCurrency(currentValue)}
           </div>
-          <p className="mt-1 text-xs text-muted-foreground truncate">
-            Latest AMFI NAV valuation
-          </p>
         </div>
 
         {/* Card 3: Wealth Created */}

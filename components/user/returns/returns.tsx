@@ -50,30 +50,29 @@ const FundReturns = async ({ searchParams }: { searchParams: SearchParams }) => 
           {/* Main Visualizer Container */}
           <Card className="overflow-hidden border border-border/80 bg-card/90 backdrop-blur-xl shadow-sm">
             <Tabs defaultValue="growth" className="w-full">
-              <div className="px-4 pt-4 border-b border-border/60 flex items-center justify-between flex-wrap gap-2">
-                <TabsList className="bg-muted/70 p-1 rounded-xl">
-                  <TabsTrigger value="growth" className="flex items-center gap-1.5 text-xs">
-                    <TrendingUp className="size-3.5" />
-                    <span>Wealth Compounding</span>
+              <div className="px-3 sm:px-4 pt-3 sm:pt-4 border-b border-border/60 overflow-x-auto no-scrollbar">
+                <TabsList className="bg-muted/70 p-1 rounded-xl inline-flex w-max min-w-full sm:min-w-0 sm:w-auto h-auto gap-1">
+                  <TabsTrigger value="growth" className="flex items-center gap-1.5 text-xs px-3 py-1.5 shrink-0 rounded-lg">
+                    <TrendingUp className="size-3.5 text-primary shrink-0" />
+                    <span className="hidden sm:inline">Wealth Compounding</span>
+                    <span className="sm:hidden">Compounding</span>
                   </TabsTrigger>
-                  <TabsTrigger value="compare" className="flex items-center gap-1.5 text-xs">
-                    <BarChart3 className="size-3.5" />
-                    <span>Fund Comparison</span>
+                  <TabsTrigger value="compare" className="flex items-center gap-1.5 text-xs px-3 py-1.5 shrink-0 rounded-lg">
+                    <BarChart3 className="size-3.5 shrink-0" />
+                    <span className="hidden sm:inline">Fund Comparison</span>
+                    <span className="sm:hidden">Comparison</span>
                   </TabsTrigger>
-                  <TabsTrigger value="allocation" className="flex items-center gap-1.5 text-xs">
-                    <PieChart className="size-3.5" />
-                    <span>Asset Allocation</span>
+                  <TabsTrigger value="allocation" className="flex items-center gap-1.5 text-xs px-3 py-1.5 shrink-0 rounded-lg">
+                    <PieChart className="size-3.5 shrink-0" />
+                    <span className="hidden sm:inline">Asset Allocation</span>
+                    <span className="sm:hidden">Allocation</span>
                   </TabsTrigger>
-                  <TabsTrigger value="schemes" className="flex items-center gap-1.5 text-xs">
-                    <Layers className="size-3.5" />
-                    <span>Fund Breakdown ({selectedFundHistory.length})</span>
+                  <TabsTrigger value="schemes" className="flex items-center gap-1.5 text-xs px-3 py-1.5 shrink-0 rounded-lg">
+                    <Layers className="size-3.5 shrink-0" />
+                    <span className="hidden sm:inline">Fund Breakdown ({selectedFundHistory.length})</span>
+                    <span className="sm:hidden">Breakdown ({selectedFundHistory.length})</span>
                   </TabsTrigger>
                 </TabsList>
-
-                <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
-                  <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Real AMFI Historical NAV</span>
-                </div>
               </div>
 
               {/* Tab 1: Wealth Compounding Dual Area Chart */}
@@ -149,7 +148,7 @@ const FundReturns = async ({ searchParams }: { searchParams: SearchParams }) => 
               </h3>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 Select mutual fund schemes, configure your monthly SIP amount, and click{" "}
-                <span className="font-semibold text-foreground">Calculate</span> to simulate real historical AMFI NAV returns.
+                <span className="font-semibold text-foreground">Calculate</span> to simulate real historical NAV returns.
               </p>
             </div>
 
@@ -157,7 +156,7 @@ const FundReturns = async ({ searchParams }: { searchParams: SearchParams }) => 
               <div className="p-2.5 rounded-xl border border-border/60 bg-muted/30 text-left text-xs">
                 <div className="flex items-center gap-1.5 font-semibold text-foreground">
                   <Sparkles className="size-3.5 text-primary" />
-                  Newton-Raphson XIRR
+                  XIRR
                 </div>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
                   Exact annualized returns across market cycles

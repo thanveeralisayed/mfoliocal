@@ -42,15 +42,15 @@ export const SipComparativeChart: React.FC<SipComparativeChartProps> = ({ funds,
     )
   }
 
-  // Pre-map fund color assignments
+  // Pre-map fund color assignments with safe keys immune to special characters/dots
   const fundConfigs = funds.map((f, i) => ({
     name: f.schemeName,
     code: f.schemeCode,
     color: PALETTE[i % PALETTE.length],
     xirr: f.xirr || 0,
     growth: f.growthPercentage || 0,
-    valueKey: f.schemeName,
-    pctKey: `${f.schemeName}__pct`,
+    valueKey: `fund_${f.schemeCode}`,
+    pctKey: `fund_${f.schemeCode}__pct`,
   }))
 
   return (
@@ -122,7 +122,7 @@ export const SipComparativeChart: React.FC<SipComparativeChartProps> = ({ funds,
                       {fundConfigs.map((cfg) => {
                         const targetKey = activeMetric === "percentage" ? cfg.pctKey : cfg.valueKey
                         const entry = payload.find((p) => p.dataKey === targetKey)
-                        const val = entry ? entry.value : undefined
+                        const val = entry?.value !== undefined ? entry.value : payload[0]?.payload?.[targetKey]
                         if (val === undefined || val === null) return null
 
                         return (
@@ -187,6 +187,7 @@ export const SipComparativeChart: React.FC<SipComparativeChartProps> = ({ funds,
                   strokeWidth={highlightedFund === cfg.name ? 3 : 2}
                   strokeOpacity={isDimmed ? 0.25 : 1}
                   dot={false}
+                  connectNulls={true}
                   activeDot={{ r: 5, strokeWidth: 1, fill: cfg.color, stroke: "#FFFFFF" }}
                 />
               )
