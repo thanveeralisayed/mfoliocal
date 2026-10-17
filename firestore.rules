@@ -1,0 +1,24 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Comments & feedback collection
+    match /comments/{commentId} {
+      // Allow anyone to read feedback
+      allow read: if true;
+
+      // Allow anyone to create a comment with validation
+      allow create: if request.resource.data.name is string
+                    && request.resource.data.name.size() >= 2
+                    && request.resource.data.name.size() <= 60
+                    && request.resource.data.comment is string
+                    && request.resource.data.comment.size() >= 5
+                    && request.resource.data.comment.size() <= 500
+                    && (request.resource.data.referralSource == null || request.resource.data.referralSource is string)
+                    && request.resource.data.createdAt is timestamp;
+
+      // Prevent editing or deleting from client
+      allow update, delete: if false;
+    }
+  }
+}
