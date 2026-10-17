@@ -27,11 +27,23 @@ export interface FundItemContext {
   sipAmount?: number
 }
 
+export interface PortfolioContextData {
+  totalInvested: number
+  currentValue: number
+  totalGain: number
+  growthPercentage: number
+  xirr: number
+  wealthMultiplier: number
+  timeframe: string
+  fundsCount: number
+}
+
 export interface AssistantContextPayload {
   page: "home-loan" | "mutual-funds" | "general"
   pathname: string
   loan?: LoanContextData
   funds?: FundItemContext[]
+  portfolio?: PortfolioContextData
 }
 
 interface FinancialAssistantContextType {
@@ -41,6 +53,7 @@ interface FinancialAssistantContextType {
   pageContext: AssistantContextPayload
   updateLoanContext: (loan: LoanContextData) => void
   updateFundsContext: (funds: FundItemContext[]) => void
+  updatePortfolioContext: (portfolio: PortfolioContextData) => void
   pendingPrompt: string | null
   askPrompt: (promptText: string) => void
   clearPendingPrompt: () => void
@@ -55,6 +68,7 @@ export function FinancialAssistantProvider({ children }: { children: React.React
 
   const [loanContext, setLoanContext] = React.useState<LoanContextData | undefined>(undefined)
   const [fundsContext, setFundsContext] = React.useState<FundItemContext[] | undefined>(undefined)
+  const [portfolioContext, setPortfolioContext] = React.useState<PortfolioContextData | undefined>(undefined)
 
   // Determine current page type
   const currentPageType = React.useMemo<"home-loan" | "mutual-funds" | "general">(() => {
@@ -69,8 +83,9 @@ export function FinancialAssistantProvider({ children }: { children: React.React
       pathname,
       loan: currentPageType === "home-loan" ? loanContext : undefined,
       funds: currentPageType === "mutual-funds" ? fundsContext : undefined,
+      portfolio: currentPageType === "mutual-funds" ? portfolioContext : undefined,
     }
-  }, [currentPageType, pathname, loanContext, fundsContext])
+  }, [currentPageType, pathname, loanContext, fundsContext, portfolioContext])
 
   const updateLoanContext = React.useCallback((data: LoanContextData) => {
     setLoanContext(data)
@@ -78,6 +93,10 @@ export function FinancialAssistantProvider({ children }: { children: React.React
 
   const updateFundsContext = React.useCallback((funds: FundItemContext[]) => {
     setFundsContext(funds)
+  }, [])
+
+  const updatePortfolioContext = React.useCallback((portfolio: PortfolioContextData) => {
+    setPortfolioContext(portfolio)
   }, [])
 
   const toggleOpen = React.useCallback(() => {
@@ -102,6 +121,7 @@ export function FinancialAssistantProvider({ children }: { children: React.React
         pageContext,
         updateLoanContext,
         updateFundsContext,
+        updatePortfolioContext,
         pendingPrompt,
         askPrompt,
         clearPendingPrompt,
