@@ -227,7 +227,7 @@ export function calculateArbitrage(inputs: ArbitrageInputs): ArbitrageResult {
 
     // Check for Crossover Year (when SIP wealth surpasses interest saved)
     const currentInterestSaved = standardTotalInterest - prepayCumulativeInterest
-    if (crossoverYear === null && sipPortfolioValue >= currentInterestSaved && m >= 12) {
+    if (crossoverYear === null && sipPortfolioValue > 0 && sipPortfolioValue >= currentInterestSaved && m >= 12) {
       crossoverYear = Number((m / 12).toFixed(1))
     }
 
@@ -248,7 +248,8 @@ export function calculateArbitrage(inputs: ArbitrageInputs): ArbitrageResult {
 
   // Yearly snapshots for charts and table
   const timeline: YearSnapshot[] = []
-  for (let y = 1; y <= loanTenureYears; y++) {
+  const totalYears = Math.ceil(loanTenureYears)
+  for (let y = 1; y <= totalYears; y++) {
     const monthIndex = Math.min(y * 12 - 1, monthlySnapshots.length - 1)
     const snap = monthlySnapshots[monthIndex]
 

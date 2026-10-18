@@ -32,9 +32,10 @@ interface CustomTooltipProps {
     color: string
   }>
   label?: string | number
+  debtFreeYear?: number
 }
 
-function CustomArbitrageTooltip({ active, payload, label }: CustomTooltipProps) {
+function CustomArbitrageTooltip({ active, payload, label, debtFreeYear }: CustomTooltipProps) {
   if (active && payload && payload.length > 0) {
     const point = payload[0].payload
     const delta = point.wealthDifference
@@ -82,7 +83,9 @@ function CustomArbitrageTooltip({ active, payload, label }: CustomTooltipProps) 
           <div className="flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
             <span>Prepaid Loan Balance:</span>
             <span className="font-mono">
-              {point.prepayLoanBalance === 0 ? "₹0 (Cleared)" : formatINR(point.prepayLoanBalance)}
+              {point.prepayLoanBalance === 0
+                ? `₹0 (Paid Off at Yr ${debtFreeYear || "early"})`
+                : formatINR(point.prepayLoanBalance)}
             </span>
           </div>
 
@@ -182,7 +185,7 @@ export function ArbitrageGrowthChart({
                   axisLine={false}
                   tickFormatter={(val) => formatCompactINR(val)}
                 />
-                <Tooltip content={<CustomArbitrageTooltip />} />
+                <Tooltip content={<CustomArbitrageTooltip debtFreeYear={debtFreeYear} />} />
                 <Legend
                   verticalAlign="top"
                   align="right"
@@ -253,7 +256,7 @@ export function ArbitrageGrowthChart({
                   axisLine={false}
                   tickFormatter={(val) => formatCompactINR(val)}
                 />
-                <Tooltip content={<CustomArbitrageTooltip />} />
+                <Tooltip content={<CustomArbitrageTooltip debtFreeYear={debtFreeYear} />} />
                 <Legend
                   verticalAlign="top"
                   align="right"
