@@ -8,7 +8,7 @@ interface Message {
 interface ChatRequestBody {
   messages: Message[]
   context?: {
-    page?: "home-loan" | "mutual-funds" | "general"
+    page?: "home-loan" | "mutual-funds" | "arbitrage" | "general"
     loan?: {
       principal: number
       annualRate: number
@@ -40,6 +40,20 @@ interface ChatRequestBody {
       wealthMultiplier: number
       timeframe: string
       fundsCount: number
+    }
+    arbitrage?: {
+      loanPrincipal: number
+      loanRate: number
+      loanTenureYears: number
+      monthlySurplus: number
+      annualLumpSum: number
+      expectedSipReturn: number
+      yearsSaved: number
+      interestSaved: number
+      sipFinalCorpus: number
+      netWealthAdvantage: number
+      arbitrageSpread: number
+      prepayPayoffYears: number
     }
   }
 }
@@ -118,6 +132,32 @@ ${fundsList}
 ${portfolioSnippet}
 
 IMPORTANT: When the user asks about returns, XIRR, or risk, evaluate their exact simulation metrics above and provide intelligent, mathematically sound advice!`
+  } else if (context?.page === "arbitrage" && context.arbitrage) {
+    const {
+      loanPrincipal,
+      loanRate,
+      loanTenureYears,
+      monthlySurplus,
+      annualLumpSum,
+      expectedSipReturn,
+      yearsSaved,
+      interestSaved,
+      sipFinalCorpus,
+      netWealthAdvantage,
+      arbitrageSpread,
+      prepayPayoffYears,
+    } = context.arbitrage
+
+    contextSnippet = `
+CURRENT USER VIEW & CALCULATOR STATE (HOME LOAN PREPAYMENT VS. EQUITY SIP ARBITRAGE):
+- Loan Principal: ${formatCurrency(loanPrincipal)} (₹${(loanPrincipal / 100000).toFixed(2)} Lakhs) at ${loanRate}% for ${loanTenureYears} Years
+- Monthly Surplus Available: ${formatCurrency(monthlySurplus)}/month
+${annualLumpSum > 0 ? `- Annual Lump Sum (Bonus): ${formatCurrency(annualLumpSum)}/year` : ""}
+- Expected Equity SIP Return: ${expectedSipReturn}% p.a. (Arbitrage Spread: ${arbitrageSpread >= 0 ? "+" : ""}${arbitrageSpread}% p.a.)
+- Prepayment Strategy: Clears loan in ${prepayPayoffYears} years (Saves ${yearsSaved} years and ${formatCurrency(interestSaved)} in interest)
+- SIP Arbitrage Strategy: Accumulates a final corpus of ${formatCurrency(sipFinalCorpus)}
+- Net Wealth Advantage: Equity SIP generates ${formatCurrency(Math.abs(netWealthAdvantage))} ${netWealthAdvantage >= 0 ? "MORE" : "LESS"} net wealth over the full tenure!
+IMPORTANT: When discussing loan prepayment vs equity SIP, directly reference the user's simulation numbers above!`
   } else {
     contextSnippet = `
 CURRENT USER VIEW: General Navigation / MfolioCal Dashboard.`
@@ -202,6 +242,47 @@ Here is the financial breakdown for your **${annualRate}%** loan:
 
 💡 *Kuber provides educational insights and scenario calculations, not certified SEBI financial advice.*`
     }
+  }
+
+  if (context?.page === "arbitrage" && context.arbitrage) {
+    const {
+      loanPrincipal,
+      loanRate,
+      loanTenureYears,
+      monthlySurplus,
+      annualLumpSum,
+      expectedSipReturn,
+      yearsSaved,
+      interestSaved,
+      sipFinalCorpus,
+      netWealthAdvantage,
+      arbitrageSpread,
+      prepayPayoffYears,
+    } = context.arbitrage
+
+    const advFormatted = formatCurrency(Math.abs(netWealthAdvantage))
+    const winnerText = netWealthAdvantage >= 0 ? "Equity SIP Arbitrage" : "Loan Prepayment"
+    const bonusText = annualLumpSum > 0 ? ` + ${formatCurrency(annualLumpSum)} annual bonus` : ""
+
+    return `### ⚖️ Kuber's Arbitrage Verdict: ${winnerText} Leads
+
+Here is the exact financial breakdown for your **${formatCurrency(loanPrincipal)}** loan at **${loanRate}%** with **${formatCurrency(monthlySurplus)}/month surplus${bonusText}**:
+
+1. **Option A: Prepay Loan Aggressively**
+   - **Debt Freedom**: You become 100% debt-free in **${prepayPayoffYears} years** (knocking off **${yearsSaved} years**).
+   - **Guaranteed Interest Saved**: **${formatCurrency(interestSaved)}**.
+   - **Psychological Value**: 0 debt stress, guaranteed risk-free return equal to your loan rate of **${loanRate}%**.
+
+2. **Option B: Invest Surplus in Equity SIP (${expectedSipReturn}% CAGR)**
+   - **Final SIP Corpus**: **${formatCurrency(sipFinalCorpus)}** accumulated over ${loanTenureYears} years.
+   - **The Arbitrage Spread**: **+${arbitrageSpread}% p.a.** over your loan interest rate.
+   - **Net Wealth Advantage**: Equity SIP produces **${advFormatted} MORE net wealth** than prepaying!
+
+**Kuber's Strategic Recommendation**:
+- **If your horizon is 10+ years & job is stable**: Keep paying standard EMI and channel your **${formatCurrency(monthlySurplus)}** into a disciplined Index or Flexi-Cap fund.
+- **If debt causes high anxiety**: Follow the **50:50 Hybrid Rule** — allocate 50% to prepayment and 50% to equity SIP.
+
+💡 *Kuber provides educational insights and scenario calculations, not certified SEBI financial advice.*`
   }
 
   if (context?.page === "mutual-funds" && context.funds && context.funds.length > 0) {
