@@ -38,12 +38,28 @@ export interface PortfolioContextData {
   fundsCount: number
 }
 
+export interface ArbitrageContextData {
+  loanPrincipal: number
+  loanRate: number
+  loanTenureYears: number
+  monthlySurplus: number
+  annualLumpSum: number
+  expectedSipReturn: number
+  yearsSaved: number
+  interestSaved: number
+  sipFinalCorpus: number
+  netWealthAdvantage: number
+  arbitrageSpread: number
+  prepayPayoffYears: number
+}
+
 export interface AssistantContextPayload {
-  page: "home-loan" | "mutual-funds" | "general"
+  page: "home-loan" | "mutual-funds" | "arbitrage" | "general"
   pathname: string
   loan?: LoanContextData
   funds?: FundItemContext[]
   portfolio?: PortfolioContextData
+  arbitrage?: ArbitrageContextData
 }
 
 interface FinancialAssistantContextType {
@@ -54,6 +70,7 @@ interface FinancialAssistantContextType {
   updateLoanContext: (loan: LoanContextData) => void
   updateFundsContext: (funds: FundItemContext[]) => void
   updatePortfolioContext: (portfolio: PortfolioContextData) => void
+  updateArbitrageContext: (arbitrage: ArbitrageContextData) => void
   pendingPrompt: string | null
   askPrompt: (promptText: string) => void
   clearPendingPrompt: () => void
@@ -69,9 +86,11 @@ export function FinancialAssistantProvider({ children }: { children: React.React
   const [loanContext, setLoanContext] = React.useState<LoanContextData | undefined>(undefined)
   const [fundsContext, setFundsContext] = React.useState<FundItemContext[] | undefined>(undefined)
   const [portfolioContext, setPortfolioContext] = React.useState<PortfolioContextData | undefined>(undefined)
+  const [arbitrageContext, setArbitrageContext] = React.useState<ArbitrageContextData | undefined>(undefined)
 
   // Determine current page type
-  const currentPageType = React.useMemo<"home-loan" | "mutual-funds" | "general">(() => {
+  const currentPageType = React.useMemo<"home-loan" | "mutual-funds" | "arbitrage" | "general">(() => {
+    if (pathname.includes("/prepay-vs-sip") || pathname.includes("/loan-vs-sip")) return "arbitrage"
     if (pathname.includes("/home-loan")) return "home-loan"
     if (pathname === "/") return "mutual-funds"
     return "general"
@@ -84,8 +103,9 @@ export function FinancialAssistantProvider({ children }: { children: React.React
       loan: currentPageType === "home-loan" ? loanContext : undefined,
       funds: currentPageType === "mutual-funds" ? fundsContext : undefined,
       portfolio: currentPageType === "mutual-funds" ? portfolioContext : undefined,
+      arbitrage: currentPageType === "arbitrage" ? arbitrageContext : undefined,
     }
-  }, [currentPageType, pathname, loanContext, fundsContext, portfolioContext])
+  }, [currentPageType, pathname, loanContext, fundsContext, portfolioContext, arbitrageContext])
 
   const updateLoanContext = React.useCallback((data: LoanContextData) => {
     setLoanContext(data)
@@ -97,6 +117,10 @@ export function FinancialAssistantProvider({ children }: { children: React.React
 
   const updatePortfolioContext = React.useCallback((portfolio: PortfolioContextData) => {
     setPortfolioContext(portfolio)
+  }, [])
+
+  const updateArbitrageContext = React.useCallback((arbitrage: ArbitrageContextData) => {
+    setArbitrageContext(arbitrage)
   }, [])
 
   const toggleOpen = React.useCallback(() => {
@@ -122,6 +146,7 @@ export function FinancialAssistantProvider({ children }: { children: React.React
         updateLoanContext,
         updateFundsContext,
         updatePortfolioContext,
+        updateArbitrageContext,
         pendingPrompt,
         askPrompt,
         clearPendingPrompt,

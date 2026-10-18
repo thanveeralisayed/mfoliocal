@@ -44,8 +44,9 @@ export function calculateHomeLoan(
     }
   }
 
-  const monthlyRate = annualRate / 12 / 100
-  const totalMonths = tenureYears * 12
+  const rate = Math.max(0, annualRate)
+  const monthlyRate = rate / 12 / 100
+  const totalMonths = Math.max(1, Math.round(tenureYears * 12))
 
   let monthlyEmi = 0
   if (monthlyRate === 0) {
@@ -78,8 +79,9 @@ export function calculateYearlyAmortization(
 ): YearlyAmortization[] {
   if (principal <= 0 || tenureYears <= 0) return []
 
-  const monthlyRate = annualRate / 12 / 100
-  const totalMonths = tenureYears * 12
+  const rate = Math.max(0, annualRate)
+  const monthlyRate = rate / 12 / 100
+  const totalMonths = Math.max(1, Math.round(tenureYears * 12))
 
   let emi = 0
   if (monthlyRate === 0) {
@@ -91,13 +93,15 @@ export function calculateYearlyAmortization(
 
   const schedule: YearlyAmortization[] = []
   let balance = principal
+  const totalYears = Math.ceil(tenureYears)
 
-  for (let y = 1; y <= tenureYears; y++) {
+  for (let y = 1; y <= totalYears; y++) {
     const openingBalance = balance
     let yearPrincipal = 0
     let yearInterest = 0
+    const monthsInThisYear = Math.min(12, totalMonths - (y - 1) * 12)
 
-    for (let m = 1; m <= 12; m++) {
+    for (let m = 1; m <= monthsInThisYear; m++) {
       if (balance <= 0) break
       const interestForMonth = balance * monthlyRate
       let principalForMonth = emi - interestForMonth
@@ -145,13 +149,17 @@ export function formatINR(val: number): string {
  * Format compact representations in Lakhs / Crores
  */
 export function formatCompactINR(val: number): string {
-  if (val >= 10000000) {
-    const cr = val / 10000000
-    return `₹ ${Number.isInteger(cr) ? cr : cr.toFixed(2)} Cr`
+  if (isNaN(val) || !isFinite(val)) return "₹ 0"
+  const isNeg = val < 0
+  const abs = Math.abs(val)
+  const sign = isNeg ? "- " : ""
+  if (abs >= 10000000) {
+    const cr = abs / 10000000
+    return `${sign}₹ ${Number.isInteger(cr) ? cr : cr.toFixed(2)} Cr`
   }
-  if (val >= 100000) {
-    const l = val / 100000
-    return `₹ ${Number.isInteger(l) ? l : l.toFixed(1)} Lakh`
+  if (abs >= 100000) {
+    const l = abs / 100000
+    return `${sign}₹ ${Number.isInteger(l) ? l : l.toFixed(1)} Lakh`
   }
   return formatINR(val)
 }
@@ -204,8 +212,9 @@ export function calculateLoanWithPrepayment(
 ): PrepaymentCalculationResult {
   const standard = calculateHomeLoan(principal, annualRate, tenureYears)
   const standardSchedule = calculateYearlyAmortization(principal, annualRate, tenureYears)
-  const totalMonths = tenureYears * 12
-  const monthlyRate = annualRate / 12 / 100
+  const totalMonths = Math.max(1, Math.round(tenureYears * 12))
+  const rate = Math.max(0, annualRate)
+  const monthlyRate = rate / 12 / 100
 
   const hasPrepayment =
     options.extraMonthly > 0 ||
@@ -260,7 +269,8 @@ export function calculateLoanWithPrepayment(
   // Precompute standard cumulative interests by year
   const standardCumIntMap: number[] = []
   let sAcc = 0
-  for (let y = 0; y < tenureYears; y++) {
+  const totalYears = Math.ceil(tenureYears)
+  for (let y = 0; y < totalYears; y++) {
     const sYear = standardSchedule[y]
     sAcc += sYear ? sYear.interestPaid : 0
     standardCumIntMap.push(sAcc)
@@ -268,11 +278,12 @@ export function calculateLoanWithPrepayment(
 
   let acceleratedCumInterest = 0
 
-  for (let y = 1; y <= tenureYears; y++) {
+  for (let y = 1; y <= totalYears; y++) {
     const openingBalance = balance
     let yearPrincipal = 0
     let yearInterest = 0
     let yearPrepayment = 0
+    const monthsInThisYear = Math.min(12, totalMonths - (y - 1) * 12)
 
     // Step-up factor for current year (if annual step-up % configured)
     const stepUpFactor =
@@ -281,7 +292,7 @@ export function calculateLoanWithPrepayment(
         : 1
     const currentBaseEmi = standard.monthlyEmi * stepUpFactor
 
-    for (let m = 1; m <= 12; m++) {
+    for (let m = 1; m <= monthsInThisYear; m++) {
       if (balance <= 0) break
       monthsElapsed++
 
@@ -346,7 +357,7 @@ export function calculateLoanWithPrepayment(
 
     if (balance <= 0) {
       // Fill remaining comparison years with 0 balance for a complete visual curve
-      for (let remY = y + 1; remY <= tenureYears; remY++) {
+      for (let remY = y + 1; remY <= totalYears; remY++) {
         const remStd = standardSchedule[remY - 1]
         yearlyComparison.push({
           year: remY,

@@ -1,5 +1,6 @@
 import { Metadata } from "next"
-import { Home as HomeIcon } from "lucide-react"
+import Link from "next/link"
+import { Home as HomeIcon, Scale, ArrowRight } from "lucide-react"
 import { LoanCalculator } from "@/components/user/loan/loanCalculator"
 import CommentSection from "@/components/user/comments/commentSection"
 
@@ -13,7 +14,7 @@ export default function HomeLoanPage() {
   return (
     <div className="container mx-auto px-4 mt-6 max-w-7xl">
       {/* Page Hero Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
             <HomeIcon className="size-3.5" />
@@ -26,6 +27,23 @@ export default function HomeLoanPage() {
         <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
           Estimate your monthly installments, total interest cost, and visualize your year-by-year principal payoff schedule.
         </p>
+
+        {/* Cross Promotion Callout */}
+        <div className="mt-4">
+          <Link
+            href="/prepay-vs-sip"
+            className="group inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-primary/10 border border-emerald-500/30 hover:border-emerald-500/60 transition-all text-xs font-semibold text-foreground shadow-2xs"
+          >
+            <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
+              <Scale className="size-3.5" />
+              <span>Have extra monthly savings?</span>
+            </span>
+            <span className="text-muted-foreground hidden sm:inline">
+              Compare Prepaying this Loan vs. Equity SIP Arbitrage
+            </span>
+            <ArrowRight className="size-3.5 text-emerald-500 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
       </div>
 
       {/* Main Interactive Loan Calculator */}

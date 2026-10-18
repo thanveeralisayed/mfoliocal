@@ -34,8 +34,12 @@ export interface SIPCalculationResult {
  * Parse Indian / MFAPI date format: "DD-MM-YYYY" or standard ISO
  */
 export function parseDateString(dateStr: string): Date {
-  if (dateStr.includes("-")) {
-    const parts = dateStr.split("-")
+  if (!dateStr || typeof dateStr !== "string") {
+    return new Date(NaN)
+  }
+  const clean = dateStr.trim().replace(/\//g, "-")
+  if (clean.includes("-")) {
+    const parts = clean.split("-")
     if (parts.length === 3) {
       if (parts[0].length === 4) {
         // YYYY-MM-DD
@@ -62,21 +66,22 @@ export function formatIndianCurrency(amount: number): string {
 }
 
 /**
- * Format compact currency for charts (e.g. ₹5.4L, ₹1.2Cr, ₹45k)
+ * Format compact currency for charts (e.g. ₹5.4L, ₹1.2Cr, ₹45k, -₹2.5L)
  */
 export function formatCompactCurrency(val: number): string {
-  if (isNaN(val)) return "₹0"
+  if (isNaN(val) || val === null || val === undefined) return "₹0"
   const abs = Math.abs(val)
+  const sign = val < 0 ? "-" : ""
   if (abs >= 10000000) {
-    return `₹${(val / 10000000).toFixed(2)}Cr`
+    return `${sign}₹${(abs / 10000000).toFixed(2)}Cr`
   }
   if (abs >= 100000) {
-    return `₹${(val / 100000).toFixed(2)}L`
+    return `${sign}₹${(abs / 100000).toFixed(2)}L`
   }
   if (abs >= 1000) {
-    return `₹${(val / 1000).toFixed(1)}k`
+    return `${sign}₹${(abs / 1000).toFixed(1)}k`
   }
-  return `₹${Math.round(val)}`
+  return `${sign}₹${Math.round(abs)}`
 }
 
 /**
@@ -90,12 +95,19 @@ export function calculateXIRR(cashFlows: CashFlow[], guess = 0.12): number {
   const hasInflow = cashFlows.some((cf) => cf.amount > 0)
   if (!hasOutflow || !hasInflow) return 0
 
-  const startDate = cashFlows[0].date.getTime()
+  // Ensure cash flows are sorted chronologically
+  const sortedFlows = [...cashFlows].sort((a, b) => a.date.getTime() - b.date.getTime())
+  const startDate = sortedFlows[0].date.getTime()
+  const endDate = sortedFlows[sortedFlows.length - 1].date.getTime()
+
+  // If start and end are on the exact same date (0 duration), return 0
+  if (startDate === endDate) return 0
+
   const daysDiff = (d: Date) => (d.getTime() - startDate) / (1000 * 60 * 60 * 24 * 365)
 
   // Net Present Value function
   const npv = (rate: number): number => {
-    return cashFlows.reduce((acc, cf) => {
+    return sortedFlows.reduce((acc, cf) => {
       const t = daysDiff(cf.date)
       return acc + cf.amount / Math.pow(1 + rate, t)
     }, 0)
@@ -103,7 +115,7 @@ export function calculateXIRR(cashFlows: CashFlow[], guess = 0.12): number {
 
   // Derivative of NPV with respect to rate
   const dNpv = (rate: number): number => {
-    return cashFlows.reduce((acc, cf) => {
+    return sortedFlows.reduce((acc, cf) => {
       const t = daysDiff(cf.date)
       if (t === 0) return acc
       return acc - (t * cf.amount) / Math.pow(1 + rate, t + 1)
@@ -138,10 +150,10 @@ export function calculateXIRR(cashFlows: CashFlow[], guess = 0.12): number {
 
   // Fallback to simple CAGR approximation if Newton-Raphson diverges
   const totalInvested = Math.abs(
-    cashFlows.filter((cf) => cf.amount < 0).reduce((a, b) => a + b.amount, 0)
+    sortedFlows.filter((cf) => cf.amount < 0).reduce((a, b) => a + b.amount, 0)
   )
-  const finalValue = cashFlows[cashFlows.length - 1]?.amount || 0
-  const totalYears = Math.max(0.5, daysDiff(cashFlows[cashFlows.length - 1].date))
+  const finalValue = sortedFlows[sortedFlows.length - 1]?.amount || 0
+  const totalYears = Math.max(0.5, daysDiff(sortedFlows[sortedFlows.length - 1].date))
 
   if (totalInvested > 0 && finalValue > 0) {
     const cagr = (Math.pow(finalValue / totalInvested, 1 / totalYears) - 1) * 100
@@ -204,7 +216,8 @@ export function calculateAccurateSIP(
     }
   }
 
-  const intervalDays = frequency === "weekly" ? 7 : 30
+  // For monthly SIP, 27 days accommodates 28-day February intervals between monthly 1st dates
+  const intervalDays = frequency === "weekly" ? 7 : 27
   const cashFlows: CashFlow[] = []
 
   let totalUnits = 0
