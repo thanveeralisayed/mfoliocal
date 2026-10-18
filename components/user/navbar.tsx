@@ -3,11 +3,13 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Calculator, Home as HomeIcon, MessageSquare } from "lucide-react"
+import { Calculator, Home as HomeIcon, MessageSquare, Scale } from "lucide-react"
 import { ThemeToggle } from "./theme-toggle"
 
 export default function Navbar() {
   const pathname = usePathname()
+
+  const isArbitrage = pathname === "/prepay-vs-sip" || pathname === "/loan-vs-sip"
 
   return (
     <>
@@ -58,8 +60,20 @@ export default function Navbar() {
             >
               <HomeIcon className={`size-3.5 ${pathname === "/home-loan" ? "text-orange-500" : "text-muted-foreground"}`} />
               <span>Home Loan EMI</span>
-              <span className="text-[9px] font-bold uppercase px-1.5 py-0.2 rounded-full bg-orange-500/15 text-orange-600 dark:text-orange-400 border border-orange-500/30">
-                NEW
+            </Link>
+
+            <Link
+              href="/prepay-vs-sip"
+              className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                isArbitrage
+                  ? "bg-background text-foreground shadow-xs border border-border/60"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+              }`}
+            >
+              <Scale className={`size-3.5 ${isArbitrage ? "text-emerald-500" : "text-muted-foreground"}`} />
+              <span>Prepay vs SIP</span>
+              <span className="text-[9px] font-bold uppercase px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                HOT
               </span>
             </Link>
           </nav>
@@ -88,39 +102,52 @@ export default function Navbar() {
           {/* SIP Calculator Tab */}
           <Link
             href="/"
-            className={`flex-1 flex flex-col items-center justify-center py-2 px-2 rounded-xl text-xs font-medium transition-all duration-200 ${
+            className={`flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl text-xs font-medium transition-all duration-200 ${
               pathname === "/"
                 ? "bg-primary/10 text-primary font-bold shadow-2xs border border-primary/20"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
             }`}
           >
             <Calculator className={`size-4 ${pathname === "/" ? "text-primary" : "text-muted-foreground"}`} />
-            <span className="text-[11px] mt-1">SIP Calc</span>
+            <span className="text-[10px] mt-1">SIP Calc</span>
           </Link>
 
           {/* Home Loan Tab */}
           <Link
             href="/home-loan"
-            className={`flex-1 flex flex-col items-center justify-center py-2 px-2 rounded-xl text-xs font-medium transition-all duration-200 relative ${
+            className={`flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl text-xs font-medium transition-all duration-200 relative ${
               pathname === "/home-loan"
                 ? "bg-primary/10 text-primary font-bold shadow-2xs border border-primary/20"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
             }`}
           >
+            <HomeIcon className={`size-4 ${pathname === "/home-loan" ? "text-orange-500" : "text-muted-foreground"}`} />
+            <span className="text-[10px] mt-1">Home Loan</span>
+          </Link>
+
+          {/* Prepay vs SIP Arbitrage Tab */}
+          <Link
+            href="/prepay-vs-sip"
+            className={`flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl text-xs font-medium transition-all duration-200 relative ${
+              isArbitrage
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold shadow-2xs border border-emerald-500/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+            }`}
+          >
             <span className="relative">
-              <HomeIcon className={`size-4 ${pathname === "/home-loan" ? "text-orange-500" : "text-muted-foreground"}`} />
-              <span className="absolute -top-1 -right-1.5 size-2 rounded-full bg-orange-500 ring-2 ring-card" />
+              <Scale className={`size-4 ${isArbitrage ? "text-emerald-500" : "text-muted-foreground"}`} />
+              <span className="absolute -top-1 -right-1.5 size-1.5 rounded-full bg-emerald-500" />
             </span>
-            <span className="text-[11px] mt-1">Home Loan</span>
+            <span className="text-[10px] mt-1">Arbitrage</span>
           </Link>
 
           {/* Community Feedback Tab */}
           <Link
             href="#feedback-section"
-            className="flex-1 flex flex-col items-center justify-center py-2 px-2 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all duration-200"
+            className="flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all duration-200"
           >
             <MessageSquare className="size-4 text-muted-foreground" />
-            <span className="text-[11px] mt-1">Feedback</span>
+            <span className="text-[10px] mt-1">Feedback</span>
           </Link>
         </div>
       </nav>

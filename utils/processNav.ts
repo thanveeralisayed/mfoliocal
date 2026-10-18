@@ -1,9 +1,9 @@
 'use server'
 
-import { Returns } from "@/models/returns";
-import { ReturnsHistory } from "@/models/returnsHistory";
-import { SchemeHistory } from "@/models/schemeHistory"
-import { calculateAccurateSIP, parseDateString } from "./sipMath";
+import type { Returns } from "@/models/returns";
+import type { ReturnsHistory } from "@/models/returnsHistory";
+import type { SchemeHistory } from "@/models/schemeHistory";
+import { calculateAccurateSIP, parseDateString } from "./sipMath.ts";
 
 export const getReturnsForSipByFunds = async (
     schemeData: SchemeHistory[],
