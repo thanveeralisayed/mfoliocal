@@ -4,7 +4,6 @@ import * as React from "react"
 import {
   TrendingUp,
   ShieldCheck,
-  CheckCircle2,
   Sparkles,
   Percent,
   Share2,
@@ -14,6 +13,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArbitrageResult, formatCompactINR, formatINR } from "@/utils/arbitrageCalculations"
 import { useFinancialAssistant } from "@/context/FinancialAssistantContext"
+import { ShareModal } from "@/components/user/sharing/shareModal"
+import { generateArbitrageShareCard } from "@/components/user/sharing/canvasCardGenerator"
 
 interface ArbitrageHeroCardProps {
   result: ArbitrageResult
@@ -37,27 +38,27 @@ export function ArbitrageHeroCard({
   onToggleTax,
 }: ArbitrageHeroCardProps) {
   const { askPrompt } = useFinancialAssistant()
-  const [copied, setCopied] = React.useState(false)
+  const [isShareOpen, setIsShareOpen] = React.useState(false)
 
   const isSipWinning = result.netWealthAdvantage >= 0
   const advantageAmount = includeTax ? Math.abs(result.netPostTaxAdvantage) : Math.abs(result.netWealthAdvantage)
   const advantageFormatted = formatCompactINR(advantageAmount)
 
-  const handleShare = () => {
-    const textToShare = `⚖️ Home Loan Prepayment vs Equity SIP Arbitrage on MfolioCal:
-• Loan: ${formatCompactINR(loanPrincipal)} @ ${loanRate}% (${loanTenureYears}Y)
-• Surplus: ${formatINR(monthlySurplus)}/month
-• Prepayment Result: Debt-free in ${result.prepayPayoffYears} yrs (Saved ${result.yearsSaved} yrs & ${formatCompactINR(result.interestSaved)} interest)
-• SIP Result: Final corpus of ${formatCompactINR(result.sipFinalCorpus)} @ ${expectedSipReturn}% CAGR
-• VERDICT: Equity SIP generates ${advantageFormatted} MORE wealth!
-Calculate your scenario here: ${window.location.href}`
+  const handleGenerateCard = React.useCallback(async () => {
+    return generateArbitrageShareCard({
+      loanPrincipal,
+      loanRate,
+      monthlySurplus,
+      sipReturn: expectedSipReturn,
+      netWealthAdvantage: result.netWealthAdvantage,
+      yearsSaved: result.yearsSaved,
+      interestSaved: result.interestSaved,
+      sipFinalCorpus: result.sipFinalCorpus,
+    })
+  }, [loanPrincipal, loanRate, monthlySurplus, expectedSipReturn, result])
 
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(textToShare).then(() => {
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2500)
-      })
-    }
+  const handleShare = () => {
+    setIsShareOpen(true)
   }
 
   const handleAskKuber = () => {
@@ -138,17 +139,8 @@ Calculate your scenario here: ${window.location.href}`
               size="sm"
               className="gap-1.5 font-medium border-border/80 hover:bg-muted/80 cursor-pointer"
             >
-              {copied ? (
-                <>
-                  <CheckCircle2 className="size-3.5 text-emerald-500" />
-                  <span className="text-emerald-500 font-bold">Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Share2 className="size-3.5" />
-                  <span>Share Result</span>
-                </>
-              )}
+              <Share2 className="size-3.5 text-primary" />
+              <span>Share Result</span>
             </Button>
           </div>
         </div>
@@ -300,6 +292,17 @@ Calculate your scenario here: ${window.location.href}`
           {includeTax ? "✓ Tax Factors Applied" : "Apply Tax Factors"}
         </Button>
       </div>
+
+      {/* Social Card Share Modal */}
+      <ShareModal
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        title="Share Your Arbitrage Verdict"
+        shareText={`I compared Home Loan Prepayment vs Equity Mutual Fund SIP on MfolioCal: ${
+          isSipWinning ? `Equity SIP generates ₹${advantageFormatted} MORE wealth!` : `Prepaying loan is mathematically superior!`
+        }`}
+        generateCard={handleGenerateCard}
+      />
     </div>
   )
 }

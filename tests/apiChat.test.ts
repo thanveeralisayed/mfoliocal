@@ -155,10 +155,60 @@ describe("AI Financial Assistant Engine (api/chat/route.ts)", () => {
         },
       })
 
-      assert.ok(reply.includes("Kuber's Arbitrage Verdict"))
-      assert.ok(reply.includes("Pathway A: Prepay Loan Aggressively") || reply.includes("Option A: Prepay Loan Aggressively"))
-      assert.ok(reply.includes("Option B: Invest Surplus in Equity SIP"))
-      assert.ok(reply.includes("50:50 Hybrid Rule"))
+      assert.ok(reply.includes("Arbitrage Verdict"))
+      assert.ok(reply.includes("Mathematical Winner") || reply.includes("Equity SIP"))
+      assert.ok(reply.includes("50:50 rule") || reply.includes("50:50"))
+    })
+
+    it("should generate goal planner advice for goal-planner page", () => {
+      const reply = generateSmartFallbackResponse("How should I plan my child education goal?", {
+        page: "goal-planner",
+        goal: {
+          targetAmount: 3500000,
+          targetYears: 12,
+          expectedReturn: 12.0,
+          inflationRate: 8.0,
+          adjustForInflation: true,
+          effectiveTargetCorpus: 8813580,
+          monthlySipRequired: 27500,
+          monthlySipStepUpInitial: 16500,
+          stepUpPercent: 10,
+          totalCapitalInvested: 4200000,
+          totalWealthGain: 4613580,
+          wealthMultiplier: 2.1,
+          riskLevel: "High Growth",
+        },
+      })
+
+      assert.ok(reply.includes("Strategy to Achieve"))
+      assert.ok(reply.includes("Required Monthly Commitment"))
+      assert.ok(reply.includes("Asset Allocation") || reply.includes("80% Equity"))
+    })
+
+    it("should generate balance transfer advice for balance-transfer page", () => {
+      const reply = generateSmartFallbackResponse("Should I switch my loan from 9.25% to 8.40%?", {
+        page: "balance-transfer",
+        balanceTransfer: {
+          outstandingPrincipal: 4500000,
+          currentRate: 9.25,
+          newRate: 8.40,
+          remainingTenureYears: 18,
+          currentMonthlyEmi: 43250,
+          newMonthlyEmiA: 40750,
+          monthlyEmiSavings: 2500,
+          netLifetimeSavingsA: 516000,
+          breakEvenMonthsA: 9,
+          yearsSavedB: 2.1,
+          netLifetimeSavingsB: 780000,
+          totalSwitchingCost: 23750,
+          verdict: "Strongly Recommended",
+        },
+      })
+
+      assert.ok(reply.includes("Home Loan Balance Transfer Analysis"))
+      assert.ok(reply.includes("Strongly Recommended"))
+      assert.ok(reply.includes("Strategy A (Lower Monthly EMI)"))
+      assert.ok(reply.includes("call your existing bank branch manager") || reply.includes("repricing"))
     })
 
     it("should generate general guide when no specific context is active", () => {

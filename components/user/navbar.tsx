@@ -3,13 +3,22 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Calculator, Home as HomeIcon, MessageSquare, Scale } from "lucide-react"
+import {
+  Calculator,
+  Home as HomeIcon,
+  MessageSquare,
+  Scale,
+  Target,
+  ArrowRightLeft,
+} from "lucide-react"
 import { ThemeToggle } from "./theme-toggle"
 
 export default function Navbar() {
   const pathname = usePathname()
 
   const isArbitrage = pathname === "/prepay-vs-sip" || pathname === "/loan-vs-sip"
+  const isGoal = pathname === "/goal-planner"
+  const isTransfer = pathname === "/balance-transfer"
 
   return (
     <>
@@ -36,35 +45,64 @@ export default function Navbar() {
           {/* Center: Desktop Segmented Calculator Switcher (Hidden on mobile) */}
           <nav
             aria-label="Calculators Switcher"
-            className="hidden md:flex items-center bg-muted/60 p-1 rounded-xl border border-border/50 gap-1 shadow-2xs"
+            className="hidden lg:flex items-center bg-muted/60 p-1 rounded-xl border border-border/50 gap-1 shadow-2xs"
           >
+            {/* SIP Calculator */}
             <Link
               href="/"
-              className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
                 pathname === "/"
                   ? "bg-background text-foreground shadow-xs border border-border/60"
                   : "text-muted-foreground hover:text-foreground hover:bg-background/50"
               }`}
             >
               <Calculator className={`size-3.5 ${pathname === "/" ? "text-primary" : "text-muted-foreground"}`} />
-              <span>SIP Calculator</span>
+              <span>SIP</span>
             </Link>
 
+            {/* Goal Planner */}
+            <Link
+              href="/goal-planner"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                isGoal
+                  ? "bg-background text-foreground shadow-xs border border-border/60"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+              }`}
+            >
+              <Target className={`size-3.5 ${isGoal ? "text-indigo-500" : "text-muted-foreground"}`} />
+              <span>Goal Planner</span>
+            </Link>
+
+            {/* Home Loan EMI */}
             <Link
               href="/home-loan"
-              className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
                 pathname === "/home-loan"
                   ? "bg-background text-foreground shadow-xs border border-border/60"
                   : "text-muted-foreground hover:text-foreground hover:bg-background/50"
               }`}
             >
               <HomeIcon className={`size-3.5 ${pathname === "/home-loan" ? "text-orange-500" : "text-muted-foreground"}`} />
-              <span>Home Loan EMI</span>
+              <span>Home Loan</span>
             </Link>
 
+            {/* Balance Transfer */}
+            <Link
+              href="/balance-transfer"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                isTransfer
+                  ? "bg-background text-foreground shadow-xs border border-border/60"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+              }`}
+            >
+              <ArrowRightLeft className={`size-3.5 ${isTransfer ? "text-blue-500" : "text-muted-foreground"}`} />
+              <span>Refinance</span>
+            </Link>
+
+            {/* Prepay vs SIP Arbitrage */}
             <Link
               href="/prepay-vs-sip"
-              className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
                 isArbitrage
                   ? "bg-background text-foreground shadow-xs border border-border/60"
                   : "text-muted-foreground hover:text-foreground hover:bg-background/50"
@@ -96,58 +134,72 @@ export default function Navbar() {
       {/* 2. Mobile Floating Bottom Navigation Dock (Hidden on Desktop) */}
       <nav
         aria-label="Mobile Bottom Navigation"
-        className="md:hidden fixed bottom-3 inset-x-4 z-50 pointer-events-none"
+        className="lg:hidden fixed bottom-3 inset-x-3 z-50 pointer-events-none"
       >
-        <div className="pointer-events-auto max-w-sm mx-auto rounded-2xl border border-border/80 bg-card/90 backdrop-blur-2xl shadow-2xl p-1.5 flex items-center justify-around gap-1">
-          {/* SIP Calculator Tab */}
+        <div className="pointer-events-auto max-w-md mx-auto rounded-2xl border border-border/80 bg-card/90 backdrop-blur-2xl shadow-2xl p-1.5 flex items-center justify-around gap-1">
+          {/* SIP Tab */}
           <Link
             href="/"
-            className={`flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl text-xs font-medium transition-all duration-200 ${
+            className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-xs font-medium transition-all duration-200 ${
               pathname === "/"
                 ? "bg-primary/10 text-primary font-bold shadow-2xs border border-primary/20"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
             }`}
           >
             <Calculator className={`size-4 ${pathname === "/" ? "text-primary" : "text-muted-foreground"}`} />
-            <span className="text-[10px] mt-1">SIP Calc</span>
+            <span className="text-[9px] sm:text-[10px] mt-1">SIP</span>
+          </Link>
+
+          {/* Goal Tab */}
+          <Link
+            href="/goal-planner"
+            className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-xs font-medium transition-all duration-200 ${
+              isGoal
+                ? "bg-primary/10 text-primary font-bold shadow-2xs border border-primary/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+            }`}
+          >
+            <Target className={`size-4 ${isGoal ? "text-indigo-500" : "text-muted-foreground"}`} />
+            <span className="text-[9px] sm:text-[10px] mt-1">Goal</span>
           </Link>
 
           {/* Home Loan Tab */}
           <Link
             href="/home-loan"
-            className={`flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl text-xs font-medium transition-all duration-200 relative ${
+            className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-xs font-medium transition-all duration-200 ${
               pathname === "/home-loan"
                 ? "bg-primary/10 text-primary font-bold shadow-2xs border border-primary/20"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
             }`}
           >
             <HomeIcon className={`size-4 ${pathname === "/home-loan" ? "text-orange-500" : "text-muted-foreground"}`} />
-            <span className="text-[10px] mt-1">Home Loan</span>
+            <span className="text-[9px] sm:text-[10px] mt-1">Loan</span>
           </Link>
 
-          {/* Prepay vs SIP Arbitrage Tab */}
+          {/* Refinance Tab */}
+          <Link
+            href="/balance-transfer"
+            className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-xs font-medium transition-all duration-200 ${
+              isTransfer
+                ? "bg-primary/10 text-primary font-bold shadow-2xs border border-primary/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+            }`}
+          >
+            <ArrowRightLeft className={`size-4 ${isTransfer ? "text-blue-500" : "text-muted-foreground"}`} />
+            <span className="text-[9px] sm:text-[10px] mt-1">Switch</span>
+          </Link>
+
+          {/* Arbitrage Tab */}
           <Link
             href="/prepay-vs-sip"
-            className={`flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl text-xs font-medium transition-all duration-200 relative ${
+            className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-xs font-medium transition-all duration-200 relative ${
               isArbitrage
                 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold shadow-2xs border border-emerald-500/20"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
             }`}
           >
-            <span className="relative">
-              <Scale className={`size-4 ${isArbitrage ? "text-emerald-500" : "text-muted-foreground"}`} />
-              <span className="absolute -top-1 -right-1.5 size-1.5 rounded-full bg-emerald-500" />
-            </span>
-            <span className="text-[10px] mt-1">Arbitrage</span>
-          </Link>
-
-          {/* Community Feedback Tab */}
-          <Link
-            href="#feedback-section"
-            className="flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all duration-200"
-          >
-            <MessageSquare className="size-4 text-muted-foreground" />
-            <span className="text-[10px] mt-1">Feedback</span>
+            <Scale className={`size-4 ${isArbitrage ? "text-emerald-500" : "text-muted-foreground"}`} />
+            <span className="text-[9px] sm:text-[10px] mt-1">Prepay/SIP</span>
           </Link>
         </div>
       </nav>
