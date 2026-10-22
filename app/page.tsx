@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import Link from "next/link"
-import { Scale, ArrowRight } from "lucide-react"
+import { Scale, ArrowRight, Target } from "lucide-react"
 import { SearchParams } from "@/models/searchParams"
 import CommentSection from "@/components/user/comments/commentSection"
 import Loading from "@/components/loading"
@@ -29,15 +29,25 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
           <InteractiveFundSearch />
         </div>
 
-        {/* Cross-feature banner: Prepay vs SIP */}
-        <div className="pt-1">
+        {/* Cross-feature banners: Goal Planner & Prepay vs SIP */}
+        <div className="pt-1 flex flex-wrap items-center justify-center gap-2">
+          <Link
+            href="/goal-planner"
+            className="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/25 transition-all text-xs font-medium text-foreground shadow-2xs"
+          >
+            <Target className="size-3.5 text-indigo-500" />
+            <span>Have a Specific Target?</span>
+            <span className="font-semibold text-primary">Goal-Based Reverse SIP</span>
+            <ArrowRight className="size-3 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+
           <Link
             href="/prepay-vs-sip"
             className="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-muted/60 hover:bg-muted/90 border border-border/70 transition-all text-xs font-medium text-muted-foreground hover:text-foreground shadow-2xs"
           >
             <Scale className="size-3.5 text-emerald-500" />
             <span>Have a Home Loan?</span>
-            <span className="font-semibold text-foreground">Compare Prepayment vs. Equity SIP</span>
+            <span className="font-semibold text-foreground">Compare Prepay vs. Equity SIP</span>
             <ArrowRight className="size-3 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </div>

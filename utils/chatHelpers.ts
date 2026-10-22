@@ -6,7 +6,7 @@ export interface Message {
 export interface ChatRequestBody {
   messages: Message[]
   context?: {
-    page?: "home-loan" | "mutual-funds" | "arbitrage" | "general"
+    page?: "home-loan" | "mutual-funds" | "arbitrage" | "goal-planner" | "balance-transfer" | "general"
     loan?: {
       principal: number
       annualRate: number
@@ -52,6 +52,36 @@ export interface ChatRequestBody {
       netWealthAdvantage: number
       arbitrageSpread: number
       prepayPayoffYears: number
+    }
+    goal?: {
+      targetAmount: number
+      targetYears: number
+      expectedReturn: number
+      inflationRate: number
+      adjustForInflation: boolean
+      effectiveTargetCorpus: number
+      monthlySipRequired: number
+      monthlySipStepUpInitial: number
+      stepUpPercent: number
+      totalCapitalInvested: number
+      totalWealthGain: number
+      wealthMultiplier: number
+      riskLevel: string
+    }
+    balanceTransfer?: {
+      outstandingPrincipal: number
+      currentRate: number
+      newRate: number
+      remainingTenureYears: number
+      currentMonthlyEmi: number
+      newMonthlyEmiA: number
+      monthlyEmiSavings: number
+      netLifetimeSavingsA: number
+      breakEvenMonthsA: number
+      yearsSavedB: number
+      netLifetimeSavingsB: number
+      totalSwitchingCost: number
+      verdict: string
     }
   }
 }
@@ -157,6 +187,61 @@ ${annualLumpSum > 0 ? `- Annual Lump Sum (Bonus): ${formatCurrency(annualLumpSum
 - SIP Arbitrage Strategy: Accumulates a final corpus of ${formatCurrency(sipFinalCorpus)}
 - Net Wealth Advantage: Equity SIP generates ${formatCurrency(Math.abs(netWealthAdvantage))} ${netWealthAdvantage >= 0 ? "MORE" : "LESS"} net wealth over the full tenure!
 IMPORTANT: When discussing loan prepayment vs equity SIP, directly reference the user's simulation numbers above!`
+  } else if (context?.page === "goal-planner" && context.goal) {
+    const {
+      targetAmount,
+      targetYears,
+      expectedReturn,
+      inflationRate,
+      adjustForInflation,
+      effectiveTargetCorpus,
+      monthlySipRequired,
+      monthlySipStepUpInitial,
+      stepUpPercent,
+      totalCapitalInvested,
+      totalWealthGain,
+      wealthMultiplier,
+      riskLevel,
+    } = context.goal
+
+    contextSnippet = `
+CURRENT USER VIEW & CALCULATOR STATE (GOAL-BASED REVERSE SIP PLANNER):
+- Target Goal in Today's Cost: ${formatCurrency(targetAmount)}
+- Time Horizon: ${targetYears} Years
+- Expected Return: ${expectedReturn}% p.a.
+- Inflation Setting: ${adjustForInflation ? `Adjusted at ${inflationRate}%/year (Future Corpus: ${formatCurrency(effectiveTargetCorpus)})` : "Unadjusted for inflation"}
+- Required Monthly SIP: ${stepUpPercent > 0 ? `${formatCurrency(monthlySipStepUpInitial)}/mo (with +${stepUpPercent}%/yr Step-Up)` : `${formatCurrency(monthlySipRequired)}/mo flat`}
+- Total Capital to be Invested: ${formatCurrency(totalCapitalInvested)}
+- Compounded Profit: +${formatCurrency(totalWealthGain)} (Wealth Multiplier: ${wealthMultiplier}x)
+- Recommended Asset Allocation: ${riskLevel} Portfolio
+IMPORTANT: Provide customized portfolio advice on how the user can hit their target goal of ${formatCurrency(effectiveTargetCorpus)} in ${targetYears} years!`
+  } else if (context?.page === "balance-transfer" && context.balanceTransfer) {
+    const {
+      outstandingPrincipal,
+      currentRate,
+      newRate,
+      remainingTenureYears,
+      currentMonthlyEmi,
+      newMonthlyEmiA,
+      monthlyEmiSavings,
+      netLifetimeSavingsA,
+      breakEvenMonthsA,
+      yearsSavedB,
+      netLifetimeSavingsB,
+      totalSwitchingCost,
+      verdict,
+    } = context.balanceTransfer
+
+    contextSnippet = `
+CURRENT USER VIEW & CALCULATOR STATE (HOME LOAN BALANCE TRANSFER & REFINANCE):
+- Outstanding Principal: ${formatCurrency(outstandingPrincipal)} for ${remainingTenureYears} Years remaining
+- Current Rate: ${currentRate}% (Current EMI: ${formatCurrency(currentMonthlyEmi)})
+- New Competitor Rate: ${newRate}% (Rate spread: ${(currentRate - newRate).toFixed(2)}%)
+- Total Switching Fees: ${formatCurrency(totalSwitchingCost)}
+- Strategy A (Lower EMI): New EMI of ${formatCurrency(newMonthlyEmiA)} saves ${formatCurrency(monthlyEmiSavings)}/month. Net Lifetime Savings: ${formatCurrency(netLifetimeSavingsA)}. Break-even: in ${breakEvenMonthsA} months.
+- Strategy B (Slash Tenure): Saves ${yearsSavedB} years earlier by keeping old EMI! Net Lifetime Savings: ${formatCurrency(netLifetimeSavingsB)}.
+- Audit Verdict: ${verdict}
+IMPORTANT: Help the user decide whether to switch banks or negotiate an internal rate reduction!`
   } else {
     contextSnippet = `
 CURRENT USER VIEW: General Navigation / MfolioCal Dashboard.`
@@ -165,14 +250,16 @@ CURRENT USER VIEW: General Navigation / MfolioCal Dashboard.`
   return `You are Kuber (कुबेर), the intelligent, approachable, and expert AI financial advisor built into MfolioCal (created by Thanveer Ali).
 Your specialization is personal finance in India, specifically:
 1. Home Loans & Mortgages: EMI mathematics, floating vs fixed rates, tenure reduction strategies, prepayment compounding math, and tax deductions under Section 80C (principal up to ₹1.5L) & Section 24(b) (interest up to ₹2L).
-2. Mutual Funds & Wealth Building: Systematic Investment Plans (SIP), compounding effects, CAGR vs XIRR, expense ratio impact (Direct vs Regular schemes), asset allocation, and fund categories (Flexi Cap, Large Cap, Mid Cap, Small Cap, Hybrid, Debt/Liquid). Also cover Indian capital gains tax (LTCG: 12.5% above ₹1.25L exemption, STCG: 20%).
-3. The Classic Dilemma (Loan Prepayment vs SIP Arbitrage): Providing mathematical comparisons of prepaying an 8.5%-9% loan vs investing surplus in an equity fund generating 12%-14% long-term returns.
+2. Balance Transfers & Refinance: Analyzing switching fee friction, break-even recovery months, and advising on bank rate negotiation.
+3. Goal-Based Wealth Planning: Reverse SIP calculations, inflation forecasting, annual salary step-ups, and milestone-based asset allocation.
+4. Mutual Funds & Wealth Building: Systematic Investment Plans (SIP), compounding effects, CAGR vs XIRR, expense ratio impact (Direct vs Regular schemes), and Indian capital gains tax (LTCG: 12.5% above ₹1.25L exemption, STCG: 20%).
+5. Prepayment vs SIP Arbitrage: Comparing guaranteed interest saved on debt vs equity compounding wealth.
 
 ${contextSnippet}
 
 STYLE & BEHAVIOR GUIDELINES:
 - Be clear, practical, and analytical. Use numbers and simple math over vague advice.
-- When the user asks a question related to their current loan or funds, DIRECTLY use their active numbers to calculate or explain the impact!
+- When the user asks a question related to their current loan, funds, or goals, DIRECTLY use their active numbers to calculate or explain the impact!
 - Use clean formatting with bold text, bullet points, and concise sections.
 - Keep responses readable and easy to scan on mobile devices.
 - Always include a brief 1-line closing disclaimer:
@@ -185,6 +272,55 @@ export function generateSmartFallbackResponse(
   context?: ChatRequestBody["context"]
 ): string {
   const query = userQuery.toLowerCase()
+
+  if (context?.page === "goal-planner" && context.goal) {
+    const { effectiveTargetCorpus, targetYears, monthlySipRequired, stepUpPercent, riskLevel } = context.goal
+    return `### 🎯 Strategy to Achieve ${formatCurrency(effectiveTargetCorpus)} in ${targetYears} Years
+
+Based on your target goal:
+
+1. **Required Monthly Commitment**:
+   - Save **${formatCurrency(monthlySipRequired)}/month** starting today.
+   ${stepUpPercent > 0 ? `- Since you selected a **${stepUpPercent}% annual step-up**, your initial investment starts lower and scales up with salary increments.` : ""}
+
+2. **Asset Allocation for a ${targetYears}-Year Horizon (${riskLevel})**:
+   ${targetYears >= 7 ? "- **80% Equity (Flexi Cap / Large & Mid Cap)**: Long runway allows compounding through market volatility.\n   - **20% Debt & Gold**: Provides portfolio ballast." : "- **50% Equity / 50% Hybrid & Debt**: Moderate horizon requires downside protection."}
+
+3. **Kuber's Execution Rule**:
+   - Set up an automated auto-debit SIP on the 1st to 5th of each month right after salary credit.
+   - Review and rebalance once a year.
+
+💡 *Kuber provides educational insights and scenario calculations, not certified SEBI financial advice.*`
+  }
+
+  if (context?.page === "balance-transfer" && context.balanceTransfer) {
+    const {
+      currentRate,
+      newRate,
+      monthlyEmiSavings,
+      netLifetimeSavingsA,
+      breakEvenMonthsA,
+      yearsSavedB,
+      verdict,
+    } = context.balanceTransfer
+
+    return `### 🔄 Home Loan Balance Transfer Analysis (${currentRate}% → ${newRate}%)
+
+**Verdict**: **${verdict}**
+
+1. **Strategy A (Lower Monthly EMI)**:
+   - Saves **${formatCurrency(monthlyEmiSavings)} every month**.
+   - Net lifetime savings after fees: **${formatCurrency(netLifetimeSavingsA)}**.
+   - You break even on all switching costs in **${breakEvenMonthsA} months**.
+
+2. **Strategy B (Keep Same EMI, Finish Early)**:
+   - Pay off your entire mortgage **${yearsSavedB} years earlier** without spending an extra rupee out of pocket!
+
+**Kuber's Next Step Recommendation**:
+Before submitting physical loan application papers to the new lender, **call your existing bank branch manager**. Tell them you have an approved sanction letter at ${newRate}%. Many lenders will reduce your rate internally for a nominal rate reset fee (₹1,000–₹5,000), saving you weeks of MODT registration and title deed transfer paperwork!
+
+💡 *Kuber provides educational insights and scenario calculations, not certified SEBI financial advice.*`
+  }
 
   if (context?.page === "home-loan" && context.loan) {
     const { principal, annualRate, tenureYears, monthlyEmi, totalInterest } = context.loan
@@ -207,8 +343,7 @@ On your loan of **${formatCurrency(principal)}**:
 💡 *Kuber provides educational insights and scenario calculations, not certified SEBI financial advice.*`
     }
 
-    if (query.includes("prepay") || query.includes("extra") || query.includes("part-payment") || query.includes("foreclos")) {
-      return `### 🏠 Prepayment Analysis for Your Loan
+    return `### 🏠 Prepayment Analysis for Your Loan
 
 Based on your active loan of **${formatCurrency(principal)} (${principalLakhs} Lakhs)** at **${annualRate}%** for **${tenureYears} years** (Monthly EMI: **${formatCurrency(monthlyEmi)}**):
 
@@ -219,85 +354,28 @@ Based on your active loan of **${formatCurrency(principal)} (${principalLakhs} L
   - You can knock off **nearly 3 years** of tenure.
   - You can save **~₹8 to ₹10 Lakhs** in interest cost.
 
-**Key Rule of Home Loans**: Because EMIs in the early years are predominantly interest, any prepayment made in the first 5-7 years has a compounding multiplier effect on interest savings.
-
-*(💡 Tip: Ask Kuber follow-up questions to explore custom prepayment or EMI scenarios.)*
-
 💡 *Kuber provides educational insights and scenario calculations, not certified SEBI financial advice.*`
-    }
-
-    if (query.includes("sip") || query.includes("invest") || query.includes("arbitrage")) {
-      return `### ⚖️ Home Loan Prepayment vs. Equity SIP
-
-Here is the financial breakdown for your **${annualRate}%** loan:
-
-- **Home Loan Prepayment**: Gives a **guaranteed, tax-free return of ${annualRate}%** (the interest saved).
-- **Equity Mutual Fund SIP**: Historically delivers **12% - 14% CAGR** over a 10+ year horizon.
-- **The Spread (Arbitrage)**: That is a ~**3.5% to 5.5% annual return advantage** in favour of equity investing.
-
-**The Hybrid Strategy (Best of both worlds)**:
-1. If your risk tolerance is conservative: Prepay 5%-10% extra each year to achieve debt freedom early.
-2. If your horizon is 10+ years: Maintain your standard EMI of **${formatCurrency(monthlyEmi)}** and channel any surplus bonus/savings into an Index or Flexi-Cap SIP!
-
-💡 *Kuber provides educational insights and scenario calculations, not certified SEBI financial advice.*`
-    }
   }
 
   if (context?.page === "arbitrage" && context.arbitrage) {
     const {
       loanPrincipal,
       loanRate,
-      loanTenureYears,
       monthlySurplus,
-      annualLumpSum,
       expectedSipReturn,
-      yearsSaved,
-      interestSaved,
-      sipFinalCorpus,
       netWealthAdvantage,
-      arbitrageSpread,
-      prepayPayoffYears,
+      sipFinalCorpus,
     } = context.arbitrage
 
-    const advFormatted = formatCurrency(Math.abs(netWealthAdvantage))
-    const winnerText = netWealthAdvantage >= 0 ? "Equity SIP Arbitrage" : "Loan Prepayment"
-    const bonusText = annualLumpSum > 0 ? ` + ${formatCurrency(annualLumpSum)} annual bonus` : ""
+    return `### ⚖️ Prepay vs. SIP Arbitrage Verdict
 
-    return `### ⚖️ Kuber's Arbitrage Verdict: ${winnerText} Leads
+Analyzing your **${formatCurrency(loanPrincipal)}** loan at **${loanRate}%** with **${formatCurrency(monthlySurplus)}/month surplus**:
 
-Here is the exact financial breakdown for your **${formatCurrency(loanPrincipal)}** loan at **${loanRate}%** with **${formatCurrency(monthlySurplus)}/month surplus${bonusText}**:
-
-1. **Option A: Prepay Loan Aggressively**
-   - **Debt Freedom**: You become 100% debt-free in **${prepayPayoffYears} years** (knocking off **${yearsSaved} years**).
-   - **Guaranteed Interest Saved**: **${formatCurrency(interestSaved)}**.
-   - **Psychological Value**: 0 debt stress, guaranteed risk-free return equal to your loan rate of **${loanRate}%**.
-
-2. **Option B: Invest Surplus in Equity SIP (${expectedSipReturn}% CAGR)**
-   - **Final SIP Corpus**: **${formatCurrency(sipFinalCorpus)}** accumulated over ${loanTenureYears} years.
-   - **The Arbitrage Spread**: **+${arbitrageSpread}% p.a.** over your loan interest rate.
-   - **Net Wealth Advantage**: Equity SIP produces **${advFormatted} MORE net wealth** than prepaying!
-
-**Kuber's Strategic Recommendation**:
-- **If your horizon is 10+ years & job is stable**: Keep paying standard EMI and channel your **${formatCurrency(monthlySurplus)}** into a disciplined Index or Flexi-Cap fund.
-- **If debt causes high anxiety**: Follow the **50:50 Hybrid Rule** — allocate 50% to prepayment and 50% to equity SIP.
-
-💡 *Kuber provides educational insights and scenario calculations, not certified SEBI financial advice.*`
-  }
-
-  if (context?.page === "mutual-funds" && context.funds && context.funds.length > 0) {
-    const firstFund = context.funds[0]
-    return `### 📈 Analysis for ${firstFund.scheme_name}
-
-- **Fund Category**: **${firstFund.scheme_category || "Equity Mutual Fund"}**
-- **Fund House**: **${firstFund.fund_house || "Indian Asset Management Company"}**
-- **Current NAV**: **₹${firstFund.nav || "Latest"}**
-
-**Category & Risk Overview**:
-- **Risk Level**: High to Very High (Standard for Equity/Growth funds). Ideal investment horizon is **5+ years**.
-- **Compounding Potential**: Suitable for long-term wealth creation via monthly SIP. Short-term volatility (1-2 years) is normal.
-- **Direct Plan Advantage**: Since this is a Direct Growth plan, there is **0% distributor commission**, giving you **0.5% - 1.2% higher annual returns** than a Regular plan over 15-20 years!
-
-*(💡 Tip: Ask Kuber to compare this fund with other categories or evaluate your portfolio diversification.)*
+- **Mathematical Winner**: **Equity SIP** (Generates **${formatCurrency(Math.abs(netWealthAdvantage))} ${netWealthAdvantage >= 0 ? "MORE" : "LESS"} wealth**).
+- **Corpus Potential**: Investing in equity at **${expectedSipReturn}% CAGR** accumulates **${formatCurrency(sipFinalCorpus)}**.
+- **Kuber's Strategic Rule**:
+  - If your time horizon is 10+ years and career is stable, invest in a diversified equity index or flexi-cap fund.
+  - If debt causes anxiety, use the **50:50 rule**: 50% extra loan prepayment + 50% equity SIP.
 
 💡 *Kuber provides educational insights and scenario calculations, not certified SEBI financial advice.*`
   }
@@ -307,11 +385,11 @@ Here is the exact financial breakdown for your **${formatCurrency(loanPrincipal)
 
 I can help you navigate personal finance, loan amortization, and mutual fund wealth creation:
 
-- 🏠 **Home Loan Analysis**: Ask about your monthly EMI, prepayment strategies, interest vs principal breakdown, and tax savings under 80C & 24(b).
-- 📈 **Mutual Fund Insights**: Ask about SIP compounding, XIRR vs CAGR, Direct vs Regular savings, and risk categories (Flexi Cap, Small Cap, etc.).
-- ⚖️ **Loan vs SIP**: Find out whether prepaying your home loan or investing in an equity SIP is mathematically superior for your goals.
-
-*(💡 Tip: Try clicking any suggested question below or ask any custom doubt.)*
+- 🎯 **Goal-Based Reverse SIP**: Calculate the exact monthly SIP needed for education, retirement, or house downpayment.
+- 🔄 **Balance Transfer & Refinance**: Evaluate switching bank loans to lower rates and analyze break-even periods.
+- 🏠 **Home Loan Analysis**: Explore monthly EMI, prepayment strategies, and tax savings under 80C & 24(b).
+- 📈 **Mutual Fund Insights**: Ask about SIP compounding, XIRR vs CAGR, Direct vs Regular savings, and risk categories.
+- ⚖️ **Loan vs SIP Arbitrage**: Compare loan prepayment with equity mutual fund compounding.
 
 💡 *Kuber provides educational insights and scenario calculations, not certified SEBI financial advice.*`
 }

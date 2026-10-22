@@ -46,14 +46,17 @@ describe("Mutual Fund Historical NAV Processing (processNav.ts)", () => {
           scheme_category: "Flexi Cap",
           scheme_code: 122639,
           scheme_name: "Parag Parikh Flexi Cap Fund",
+          isin_growth: "INF879O01019",
+          isin_div_reinvestment: null,
           sipAmount: 5000,
         },
         data: Array.from({ length: 12 }, (_, i) => ({
           date: `2023-${String(i + 1).padStart(2, "0")}-01`,
           nav: 40 + i * 2, // NAV rising from 40 to 62
+          returns: 0,
         })),
         status: "SUCCESS",
-      }
+      } as SchemeHistory & { status: string }
 
       const returns = await getReturnsForSipByFunds([mockScheme])
 
@@ -65,8 +68,8 @@ describe("Mutual Fund Historical NAV Processing (processNav.ts)", () => {
       assert.ok(fund.totalInvested > 0, "Invested capital should be positive")
       assert.ok(fund.totalUnits > 0, "Total units should be positive")
       assert.ok(fund.total > fund.totalInvested, "Final valuation should exceed invested capital due to growth")
-      assert.ok(fund.wealthMultiplier > 1.0)
-      assert.ok(fund.growthPercentage > 0)
+      assert.ok((fund.wealthMultiplier || 0) > 1.0)
+      assert.ok((fund.growthPercentage || 0) > 0)
     })
   })
 
