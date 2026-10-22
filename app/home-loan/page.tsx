@@ -1,6 +1,6 @@
 import { Metadata } from "next"
 import Link from "next/link"
-import { Home as HomeIcon, Scale, ArrowRight } from "lucide-react"
+import { Home as HomeIcon, Scale, ArrowRight, ArrowRightLeft } from "lucide-react"
 import { LoanCalculator } from "@/components/user/loan/loanCalculator"
 import CommentSection from "@/components/user/comments/commentSection"
 
@@ -28,15 +28,29 @@ export default function HomeLoanPage() {
           Estimate your monthly installments, total interest cost, and visualize your year-by-year principal payoff schedule.
         </p>
 
-        {/* Cross Promotion Callout */}
-        <div className="mt-4">
+        {/* Cross Promotion Callouts */}
+        <div className="mt-4 flex flex-wrap items-center gap-2.5">
+          <Link
+            href="/balance-transfer"
+            className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-500/10 border border-blue-500/30 hover:border-blue-500/60 transition-all text-xs font-semibold text-foreground shadow-2xs"
+          >
+            <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-bold">
+              <ArrowRightLeft className="size-3.5" />
+              <span>Paying high interest?</span>
+            </span>
+            <span className="text-muted-foreground hidden sm:inline">
+              Calculate Balance Transfer ROI & Break-Even
+            </span>
+            <ArrowRight className="size-3.5 text-blue-500 group-hover:translate-x-1 transition-transform" />
+          </Link>
+
           <Link
             href="/prepay-vs-sip"
-            className="group inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-primary/10 border border-emerald-500/30 hover:border-emerald-500/60 transition-all text-xs font-semibold text-foreground shadow-2xs"
+            className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-primary/10 border border-emerald-500/30 hover:border-emerald-500/60 transition-all text-xs font-semibold text-foreground shadow-2xs"
           >
             <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
               <Scale className="size-3.5" />
-              <span>Have extra monthly savings?</span>
+              <span>Extra monthly savings?</span>
             </span>
             <span className="text-muted-foreground hidden sm:inline">
               Compare Prepaying this Loan vs. Equity SIP Arbitrage
